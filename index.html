@@ -432,7 +432,6 @@ button:hover, .button:hover {
       "xx142-b2exe"
     ];
     
-    const baseURL = "https://williambattista726.github.io/html5/";
     const container = document.getElementById("folders");
     const noResultsMessage = document.getElementById("noResults");
     const searchInput = document.getElementById("searchInput");
@@ -480,16 +479,22 @@ button:hover, .button:hover {
     // Create folder elements for game folders
     const folderElements = [];
     
-    folders.forEach(folder => {
-      const link = document.createElement("a");
-      link.href = `${baseURL}${folder}/`;
-      link.textContent = folder.replace(/-/g, " "); // Replace hyphens with spaces for better readability
-      link.dataset.name = folder; // Store original folder name
-      link.className = "folder";
-      link.target = "_blank";
-      container.appendChild(link);
-      folderElements.push(link);
-    });
+folders.forEach(folder => {
+  const link = document.createElement("a");
+
+  // Dynamically use the current folder path (works locally and on servers)
+  const currentPath = window.location.pathname;
+  const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
+  link.href = `${baseDir}${folder}/`;
+
+  link.textContent = folder.replace(/-/g, " ");
+  link.dataset.name = folder;
+  link.className = "folder";
+  link.target = "_blank";
+  container.appendChild(link);
+  folderElements.push(link);
+});
+
     // Search functionality
 searchInput.addEventListener("input", function() {
   const searchTerm = this.value.toLowerCase().trim();
