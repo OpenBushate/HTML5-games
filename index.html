@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>HTML5 Games Navigator</title>
+  <title>Nate Bush 🔥</title>
   <style>
 body {
   font-family: 'Inter', sans-serif;
-  background: #f9f9f7; /* Very subtle off-white */
+  background: #f9f9f7; 
   padding: 2rem;
   max-width: 1100px;
   margin: 0 auto;
@@ -485,7 +485,7 @@ folders.forEach(folder => {
   // Dynamically use the current folder path (works locally and on servers)
   const currentPath = window.location.pathname;
   const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
-  link.href = `${baseDir}${folder}/`;
+  link.href = `/html5/${baseDir}${folder}/`;
 
   link.textContent = folder.replace(/-/g, " ");
   link.dataset.name = folder;
