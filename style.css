@@ -273,3 +273,103 @@ button:hover, .button:hover {
     padding: 1.5rem;
   }
 }
+
+/*dark mode, so it doesnt flash bang the whole time*/
+body.dark-mode {
+  background: #181a1b;
+  color: #e4e4e4;
+}
+
+body.dark-mode h1 {
+  color: #f5e6ba;
+}
+
+
+body.dark-mode #searchInput {
+  background: #222;
+  color: #f5e6ba;
+  border: 1px solid #333;
+}
+
+body.dark-mode .folder {
+  background: #23262a;
+  border: 1px solid #333;
+  color: #f5e6ba;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.35);
+}
+
+body.dark-mode .folder::before {
+  background: #121212;
+  border: 1px solid #333;
+}
+
+body.dark-mode .folder::after {
+  background: #333;
+}
+
+body.dark-mode .changelog-folder {
+  background: #222;
+  border: 1px solid #444;
+}
+
+body.dark-mode .changelog-folder::before {
+  background: #444;
+  border: 1px solid #444;
+}
+
+body.dark-mode .overlay {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+body.dark-mode .changelog-container {
+  background: #23262a;
+  color: #f5e6ba;
+}
+
+body.dark-mode .changelog-container::before {
+  background: #444;
+  color: #f5e6ba;
+}
+
+body.dark-mode .close-button {
+  color: #bbb;
+}
+
+body.dark-mode .close-button:hover {
+  color: #fff;
+}
+
+body.dark-mode .changelog-content h2 {
+  color: #f5e6ba;
+  border-bottom: 1px solid #333;
+}
+
+body.dark-mode .changelog-date {
+  color: #f5e6ba;
+}
+
+body.dark-mode #noResults {
+  color: #bbb;
+}
+
+body.dark-mode nav {
+  border-bottom: 1px solid #333;
+}
+
+body.dark-mode nav li a {
+  color: #ddd;
+}
+
+body.dark-mode nav li a:hover {
+  color: #f5e6ba;
+}
+
+body.dark-mode button, body.dark-mode .button {
+  background: #23262a;
+  color: #f5e6ba;
+  border: 1px solid #333;
+}
+
+body.dark-mode button:hover, body.dark-mode .button:hover {
+  background: #444;
+}
