@@ -190,7 +190,18 @@ searchInput.addEventListener("input", function() {
   }
 });
 
-document.getElementById('darkModeToggle').addEventListener('click', function() {
+const toggleButton = document.getElementById('darkModeToggle');
+
+if (localStorage.getItem('darkMode') === 'true') {
+  document.body.classList.add('dark-mode');
+  toggleButton.textContent = 'Light Mode';
+} else {
+  toggleButton.textContent = 'Dark Mode';
+}
+
+toggleButton.addEventListener('click', function() {
   document.body.classList.toggle('dark-mode');
-  this.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDarkMode); 
+  this.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
 });
