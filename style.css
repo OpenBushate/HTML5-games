@@ -446,14 +446,14 @@ body.dark-mode .changelog-content .changelog-list {
       cursor: pointer;
       border-radius: 4px;
       border: none;
-      background: #2a9d8f;
+      background: #d0d0d0;
       color: #fff;
       font-weight: bold;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       transition: background 0.2s;
     }
     #captchaSubmitBtn:hover {
-      background: #1d7462;
+      background: #5b5d5c;
     }
     #captchaResult {
       margin-top: 10px;
