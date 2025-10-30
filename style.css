@@ -274,7 +274,7 @@ button:hover, .button:hover {
   }
 }
 
-/*dark mode, so it doesnt flash bang the whole time*/
+
 body.dark-mode {
   background: #181a1b;
   color: #e4e4e4;
@@ -377,18 +377,18 @@ body.dark-mode .changelog-content .changelog-list {
   color: lemonchiffon;
 }
 
-    /* Jigsaw CAPTCHA Overlay Styles (renamed for clarity) */
+  
     #jigsawCaptchaOverlay {
       position: fixed;
       inset: 0;
-      /* make the page visible underneath but dimmed */
+     
       background: rgba(28,28,28,0.45);
       z-index: 9999;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: opacity 0.6s;
-      /* keep overlay from completely obscuring page visuals */
+     
       backdrop-filter: blur(1px);
     }
     #jigsawCaptchaModal {
@@ -400,7 +400,7 @@ body.dark-mode .changelog-content .changelog-list {
       min-width: 340px;
       min-height: 380px;
       position: relative;
-      /* allow interaction inside the modal while overlay blocks the page */
+     
       pointer-events: auto;
     }
     #jigsawCaptchaModal h2 {
