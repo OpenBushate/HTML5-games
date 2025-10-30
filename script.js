@@ -108,7 +108,7 @@
       "xx142-b2exe"
     ];
     
-    const container = document.getElementById("folders");
+  const foldersContainer = document.getElementById("folders");
     const noResultsMessage = document.getElementById("noResults");
     const searchInput = document.getElementById("searchInput");
     const changelogOverlay = document.getElementById("changelogOverlay");
@@ -117,7 +117,7 @@
     const changelogFolder = document.createElement("div");
     changelogFolder.className = "folder changelog-folder";
     changelogFolder.textContent = "changelog";
-    container.appendChild(changelogFolder);
+  foldersContainer.appendChild(changelogFolder);
 
     changelogFolder.addEventListener("click", function() {
       changelogOverlay.classList.add("show");
@@ -159,7 +159,7 @@ folders.forEach(folder => {
   link.dataset.name = folder;
   link.className = "folder";
   link.target = "_blank";
-  container.appendChild(link);
+  foldersContainer.appendChild(link);
   folderElements.push(link);
 });
 
@@ -205,3 +205,109 @@ toggleButton.addEventListener('click', function() {
   localStorage.setItem('darkMode', isDarkMode); 
   this.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
 });
+    (function(){
+      const imageSrc = "thegloriusgoat.png";
+      const rows = 3, cols = 3, pieceSize = 100;
+      const captchaKey = 'jigsawCaptchaPassed';
+      const captchaMaxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+      function captchaStillValid() {
+        try {
+          const raw = localStorage.getItem(captchaKey);
+          if (!raw) return false;
+          const obj = JSON.parse(raw);
+          if (!obj || !obj.ts) return false;
+          return (Date.now() - obj.ts) < captchaMaxAge;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      const overlay = document.getElementById('jigsawCaptchaOverlay');
+      if (captchaStillValid()) {
+        overlay.classList.add('clearing');
+        setTimeout(() => { overlay.style.display = 'none'; }, 650);
+        return;
+      }
+
+      let pieces = [];
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          pieces.push({x, y, index: y * cols + x});
+        }
+      }
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+      shuffle(pieces);
+
+      const puzzleContainer = document.getElementById('puzzleContainer');
+      pieces.forEach((piece) => {
+        const div = document.createElement('div');
+        div.classList.add('piece');
+        div.draggable = true;
+        div.style.backgroundImage = `url('${imageSrc}')`;
+        div.style.backgroundPosition = `-${piece.x * pieceSize}px -${piece.y * pieceSize}px`;
+        div.dataset.index = piece.index;
+        puzzleContainer.appendChild(div);
+      });
+
+      let dragSrcEl = null;
+      puzzleContainer.addEventListener('dragstart', function(e) {
+        if (e.target.classList.contains('piece')) {
+          dragSrcEl = e.target;
+          e.target.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        }
+      });
+      puzzleContainer.addEventListener('dragend', function(e) {
+        if (e.target.classList.contains('piece')) {
+          e.target.classList.remove('dragging');
+          puzzleContainer.querySelectorAll('.piece.over').forEach(el => el.classList.remove('over'));
+        }
+      });
+      puzzleContainer.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if (e.target.classList.contains('piece')) e.target.classList.add('over');
+      });
+      puzzleContainer.addEventListener('dragleave', function(e) {
+        if (e.target.classList.contains('piece')) e.target.classList.remove('over');
+      });
+      puzzleContainer.addEventListener('drop', function(e) {
+        e.preventDefault();
+        if (e.target.classList.contains('piece') && dragSrcEl && e.target !== dragSrcEl) {
+          const nodes = Array.from(puzzleContainer.children);
+          const srcIdx = nodes.indexOf(dragSrcEl);
+          const tgtIdx = nodes.indexOf(e.target);
+          if (srcIdx > -1 && tgtIdx > -1) {
+            if (srcIdx < tgtIdx) puzzleContainer.insertBefore(dragSrcEl, e.target.nextSibling);
+            else puzzleContainer.insertBefore(dragSrcEl, e.target);
+            puzzleContainer.insertBefore(e.target, puzzleContainer.children[srcIdx]);
+          }
+        }
+        puzzleContainer.querySelectorAll('.piece.over').forEach(el => el.classList.remove('over'));
+        dragSrcEl = null;
+      });
+
+      // submit
+      document.getElementById('captchaSubmitBtn').onclick = function() {
+        let solved = true;
+        Array.from(puzzleContainer.children).forEach((piece, idx) => {
+          if (parseInt(piece.dataset.index) !== idx) solved = false;
+        });
+        const result = document.getElementById('captchaResult');
+        if (solved) {
+          result.textContent = 'CAPTCHA Passed!';
+          // cache timestamp
+          try { localStorage.setItem(captchaKey, JSON.stringify({ts: Date.now()})); } catch (e) {}
+          // fade out and remove overlay
+          overlay.classList.add('clearing');
+          setTimeout(() => { overlay.style.display = 'none'; }, 650);
+        } else {
+          result.textContent = 'Incorrect assembly, try again.';
+        }
+      };
+    })();
