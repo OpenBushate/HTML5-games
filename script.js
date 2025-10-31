@@ -106,6 +106,7 @@
       "vex6",
       "webretro",
       "learntofly",
+      "learntofly2",
       "xx142-b2exe"
     ];
     
