@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Nate Bush 🔥</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="/thegloriusgoat.png" type="image/png">
-  
+
 </head>
+
 <body>
+    <button onclick="window.location.href = 'pomodoro'" class="start_button">Study with Nate</button>
+
   <div class="search-container">
     <input type="text" id="searchInput" placeholder="Search for games..." autocomplete="off">
     <button id="darkModeToggle" class="button">Dark Mode</button>
   </div>
   <div class="folder-list" id="folders"></div>
   <div id="noResults">No games found matching your search.</div>
-  
+
   <div id="jigsawCaptchaOverlay">
     <div id="jigsawCaptchaModal">
       <h2>Finish the CAPTCHA to verify!</h2>
@@ -50,4 +54,5 @@
   </div>
   <script src="script.js"></script>
 </body>
+
 </html>

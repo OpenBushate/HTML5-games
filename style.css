@@ -1,6 +1,6 @@
 body {
   font-family: 'Inter', sans-serif;
-  background: #f9f9f7; 
+  background: #f9f9f7;
   padding: 2rem;
   max-width: 1100px;
   margin: 0 auto;
@@ -46,14 +46,14 @@ h1 {
 }
 
 .folder {
-  background: #f5e6ba; 
+  background: #f5e6ba;
   border: 1px solid #e0d3a3;
   border-radius: 0 0 6px 6px;
   padding: 1.5rem 1rem 1rem;
   text-decoration: none;
   color: #555;
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
   position: relative;
   min-height: 50px;
@@ -71,7 +71,7 @@ h1 {
   left: 12px;
   width: 40px;
   height: 10px;
-  background: #e0cb94; 
+  background: #e0cb94;
   border: 1px solid #e0d3a3;
   border-bottom: none;
   border-radius: 3px 3px 0 0;
@@ -89,18 +89,18 @@ h1 {
 
 .folder:hover {
   transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .changelog-folder {
-  background: #d0d0d0; 
+  background: #d0d0d0;
   border: 1px solid #b0b0b0;
   grid-column: 1;
   order: -1;
 }
 
 .changelog-folder::before {
-  background: #b0b0b0; 
+  background: #b0b0b0;
   border: 1px solid #b0b0b0;
 }
 
@@ -236,7 +236,8 @@ nav li a:hover {
   color: #333;
 }
 
-button, .button {
+button,
+.button {
   background-color: #f0f0f0;
   color: #555;
   border: 1px solid #ddd;
@@ -247,7 +248,8 @@ button, .button {
   transition: all 0.2s;
 }
 
-button:hover, .button:hover {
+button:hover,
+.button:hover {
   background-color: #e6e6e6;
 }
 
@@ -259,15 +261,15 @@ button:hover, .button:hover {
   body {
     padding: 1rem;
   }
-  
+
   .folder-list {
     gap: 1rem;
   }
-  
+
   #searchInput {
     max-width: 100%;
   }
-  
+
   .changelog-container {
     width: 90%;
     padding: 1.5rem;
@@ -295,7 +297,7 @@ body.dark-mode .folder {
   background: #23262a;
   border: 1px solid #333;
   color: #f5e6ba;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.35);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
 body.dark-mode .folder::before {
@@ -360,13 +362,15 @@ body.dark-mode nav li a:hover {
   color: #f5e6ba;
 }
 
-body.dark-mode button, body.dark-mode .button {
+body.dark-mode button,
+body.dark-mode .button {
   background: #23262a;
   color: #f5e6ba;
   border: 1px solid #333;
 }
 
-body.dark-mode button:hover, body.dark-mode .button:hover {
+body.dark-mode button:hover,
+body.dark-mode .button:hover {
   background: #444;
 }
 
@@ -377,91 +381,124 @@ body.dark-mode .changelog-content .changelog-list {
   color: lemonchiffon;
 }
 
-  
-    #jigsawCaptchaOverlay {
-      position: fixed;
-      inset: 0;
-     
-      background: rgba(28,28,28,0.45);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.6s;
-     
-      backdrop-filter: blur(1px);
-    }
-    #jigsawCaptchaModal {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.35);
-      padding: 32px 24px 24px 24px;
-      text-align: center;
-      min-width: 340px;
-      min-height: 380px;
-      position: relative;
-     
-      pointer-events: auto;
-    }
-    #jigsawCaptchaModal h2 {
-      margin-top: 0;
-      margin-bottom: 18px;
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #222;
-    }
-    #puzzleContainer {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
-      gap: 2px;
-      margin: 0 auto 10px auto;
-      width: 306px;
-      user-select: none;
-    }
-    .piece {
-      width: 100px;
-      height: 100px;
-      background-size: 300px 300px;
-      border: 1px solid #888;
-      box-sizing: border-box;
-      cursor: grab;
-      transition: box-shadow 0.2s;
-      z-index: 1;
-      background-color: #f2f2f2;
-    }
-    .piece.dragging {
-      opacity: 0.6;
-      box-shadow: 0 0 8px #333;
-      z-index: 10;
-    }
-    .piece.over {
-      border: 2px dashed #2a9d8f;
-    }
-    #captchaSubmitBtn {
-      margin: 8px auto 0 auto;
-      display: block;
-      padding: 8px 16px;
-      font-size: 1em;
-      cursor: pointer;
-      border-radius: 4px;
-      border: none;
-      background: #d0d0d0;
-      color: #fff;
-      font-weight: bold;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: background 0.2s;
-    }
-    #captchaSubmitBtn:hover {
-      background: #5b5d5c;
-    }
-    #captchaResult {
-      margin-top: 10px;
-      font-weight: bold;
-      text-align: center;
-      color: #e63946;
-    }
-    #jigsawCaptchaOverlay.clearing {
-      opacity: 0;
-      pointer-events: none;
-    }
+
+#jigsawCaptchaOverlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(28, 28, 28, 0.45);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s;
+
+  backdrop-filter: blur(1px);
+}
+
+#jigsawCaptchaModal {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+  padding: 32px 24px 24px 24px;
+  text-align: center;
+  min-width: 340px;
+  min-height: 380px;
+  position: relative;
+
+  pointer-events: auto;
+}
+
+#jigsawCaptchaModal h2 {
+  margin-top: 0;
+  margin-bottom: 18px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #222;
+}
+
+#puzzleContainer {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 2px;
+  margin: 0 auto 10px auto;
+  width: 306px;
+  user-select: none;
+}
+
+.piece {
+  width: 100px;
+  height: 100px;
+  background-size: 300px 300px;
+  border: 1px solid #888;
+  box-sizing: border-box;
+  cursor: grab;
+  transition: box-shadow 0.2s;
+  z-index: 1;
+  background-color: #f2f2f2;
+}
+
+.piece.dragging {
+  opacity: 0.6;
+  box-shadow: 0 0 8px #333;
+  z-index: 10;
+}
+
+.piece.over {
+  border: 2px dashed #2a9d8f;
+}
+
+#captchaSubmitBtn {
+  margin: 8px auto 0 auto;
+  display: block;
+  padding: 8px 16px;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 4px;
+  border: none;
+  background: #d0d0d0;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background 0.2s;
+}
+
+#captchaSubmitBtn:hover {
+  background: #5b5d5c;
+}
+
+#captchaResult {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+  color: #e63946;
+}
+
+#jigsawCaptchaOverlay.clearing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+.start_button {
+  background: #ffffff;
+  font-family: inherit;
+  padding: 0.6em 1.3em;
+  font-weight: 900;
+  font-size: 18px;
+  border: 3px solid black;
+  border-radius: 0.4em;
+  box-shadow: 0.1em 0.1em;
+  cursor: pointer;
+}
+
+.start_button:hover {
+  transform: translate(-0.05em, -0.05em);
+  box-shadow: 0.15em 0.15em;
+}
+
+.start_button:active {
+  transform: translate(0.05em, 0.05em);
+  box-shadow: 0.05em 0.05em;
+}
