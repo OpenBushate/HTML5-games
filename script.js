@@ -56,6 +56,7 @@
       "flappybird",
       "friendlyfire",
       "geometry",
+      "getawayshootout",
       "geometrydash",
       "gopher",
       "hextris",
