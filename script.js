@@ -313,3 +313,133 @@ toggleButton.addEventListener('click', function() {
         }
       };
     })();
+
+  // Cache export/import utilities
+  (function() {
+    function readCookies() {
+      const raw = document.cookie || "";
+      if (!raw) return {};
+      return raw.split('; ').reduce((acc, pair) => {
+        const eq = pair.indexOf('=');
+        if (eq === -1) return acc;
+        const name = decodeURIComponent(pair.substring(0, eq));
+        const value = decodeURIComponent(pair.substring(eq + 1));
+        acc[name] = value;
+        return acc;
+      }, {});
+    }
+
+    function readStorage(storage) {
+      const out = {};
+      try {
+        for (let i = 0; i < storage.length; i++) {
+          const key = storage.key(i);
+          out[key] = storage.getItem(key);
+        }
+      } catch (e) {
+        // ignore access errors
+      }
+      return out;
+    }
+
+    function downloadJSON(obj, filename) {
+      const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+
+    function setCookie(name, value, opts = {}) {
+      let cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value);
+      // default path and 1 year max-age
+      const maxAge = opts.maxAge || 365 * 24 * 60 * 60; // seconds
+      cookie += '; path=' + (opts.path || '/');
+      if (maxAge) cookie += '; max-age=' + String(maxAge);
+      if (opts.secure) cookie += '; secure';
+      if (opts.sameSite) cookie += '; samesite=' + opts.sameSite;
+      document.cookie = cookie;
+    }
+
+    function exportCache() {
+      const data = {
+        meta: {
+          origin: location.origin,
+          generated: new Date().toISOString()
+        },
+        cookies: readCookies(),
+        localStorage: readStorage(localStorage),
+        sessionStorage: readStorage(sessionStorage)
+      };
+      const filename = `html5games-cache-${Date.now()}.json`;
+      downloadJSON(data, filename);
+    }
+
+    function importCacheFromObject(data, override = true) {
+      if (!data || typeof data !== 'object') throw new Error('Invalid file format');
+
+      if (override) {
+        try { localStorage.clear(); } catch (e) {}
+        try { sessionStorage.clear(); } catch (e) {}
+      }
+
+      if (data.localStorage && typeof data.localStorage === 'object') {
+        Object.keys(data.localStorage).forEach(key => {
+          try { localStorage.setItem(key, data.localStorage[key]); } catch (e) {}
+        });
+      }
+
+      if (data.sessionStorage && typeof data.sessionStorage === 'object') {
+        Object.keys(data.sessionStorage).forEach(key => {
+          try { sessionStorage.setItem(key, data.sessionStorage[key]); } catch (e) {}
+        });
+      }
+
+      if (data.cookies && typeof data.cookies === 'object') {
+        Object.keys(data.cookies).forEach(name => {
+          try { setCookie(name, data.cookies[name], { path: '/', maxAge: 365*24*60*60 }); } catch (e) {}
+        });
+      }
+    }
+
+    // wire UI
+    const exportBtn = document.getElementById('exportCacheBtn');
+    const importBtn = document.getElementById('importCacheBtn');
+    const importInput = document.getElementById('importFileInput');
+
+    if (exportBtn) exportBtn.addEventListener('click', () => {
+      try {
+        exportCache();
+      } catch (e) {
+        alert('Export failed: ' + (e && e.message));
+      }
+    });
+
+    if (importBtn && importInput) importBtn.addEventListener('click', () => importInput.click());
+
+    if (importInput) importInput.addEventListener('change', function(e) {
+      const file = this.files && this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          const obj = JSON.parse(String(ev.target.result));
+          const proceed = confirm('This will overwrite current localStorage, sessionStorage and set cookies from the file. Continue?');
+          if (!proceed) return;
+          importCacheFromObject(obj, true);
+          alert('Import complete. You may need to reload the page for changes to take full effect.');
+        } catch (err) {
+          alert('Failed to import file: ' + (err && err.message));
+        }
+      };
+      reader.readAsText(file);
+      this.value = '';
+    });
+
+    window.exportCache = exportCache;
+    window.importCacheFromObject = importCacheFromObject;
+  })();
