@@ -8,6 +8,3 @@ HTML5-Games
 Student Developer?
 </h2>
 Become an active contributer! Reach out to either Billy or Shaun and we would love to work with you. We want to see your style and what you can bring to this random site!
-A list of HTML5 games that can be deployed to whatever you like 
-
-One note, some games may require you to go to the 'play' folder, which contains the actual game contents. 
