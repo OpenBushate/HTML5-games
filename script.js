@@ -156,7 +156,11 @@ folders.forEach(folder => {
 
   const currentPath = window.location.pathname;
   const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
-  link.href = `/html5${baseDir}${folder}/`;
+  // target page (original game folder)
+  const targetUrl = `/html5${baseDir}${folder}/`;
+  // open inside a cloaking wrapper so pages keep the same header when opened
+  link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
+  link.dataset.original = targetUrl;
 
   link.textContent = folder.replace(/-/g, " ");
   link.dataset.name = folder;
