@@ -1,314 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <title>HTML5 Games Navigator</title>
-  <style>
-body {
-  font-family: 'Inter', sans-serif;
-  background: #f9f9f7; /* Very subtle off-white */
-  padding: 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-  color: #333;
-  line-height: 1.5;
-}
+  <title>Nate Bush 🔥</title>
+  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="icon" href="/thegloriusgoat.png" type="image/png">
 
-h1 {
-  color: #444;
-  font-weight: 600;
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-/* Search bar styling */
-.search-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-}
-
-#searchInput {
-  padding: 0.75rem 1rem;
-  width: 100%;
-  max-width: 500px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-#searchInput:focus {
-  border-color: #c0b17f;
-  box-shadow: 0 0 0 2px rgba(224, 211, 163, 0.2);
-}
-
-/* Manila folder styling - kept simple but functional */
-.folder-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
-.folder {
-  background: #f5e6ba; /* Manila folder color */
-  border: 1px solid #e0d3a3;
-  border-radius: 0 0 6px 6px;
-  padding: 1.5rem 1rem 1rem;
-  text-decoration: none;
-  color: #555;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-  transition: all 0.2s ease;
-  position: relative;
-  min-height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  cursor: pointer;
-}
-
-.folder::before {
-  content: "";
-  position: absolute;
-  top: -10px;
-  left: 12px;
-  width: 40px;
-  height: 10px;
-  background: #e0cb94; /* Darker tab color */
-  border: 1px solid #e0d3a3;
-  border-bottom: none;
-  border-radius: 3px 3px 0 0;
-}
-
-.folder::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #e0d3a3;
-}
-
-.folder:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
-
-/* Grey changelog folder */
-.changelog-folder {
-  background: #d0d0d0; /* Original grey folder color */
-  border: 1px solid #b0b0b0;
-  grid-column: 1;
-  order: -1;
-}
-
-.changelog-folder::before {
-  background: #b0b0b0; /* Darker tab color */
-  border: 1px solid #b0b0b0;
-}
-
-/* Changelog Overlay */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s, visibility 0.3s;
-}
-
-.overlay.show {
-  visibility: visible;
-  opacity: 1;
-}
-
-.changelog-container {
-  background: #f0f0f0;
-  width: 80%;
-  max-width: 700px;
-  max-height: 80vh;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  position: relative;
-  padding: 2rem;
-  overflow-y: auto;
-  transform: translateY(-20px);
-  transition: transform 0.3s;
-}
-
-.overlay.show .changelog-container {
-  transform: translateY(0);
-}
-
-/* Folder tab for the changelog */
-.changelog-container::before {
-  content: "CHANGELOG";
-  position: absolute;
-  top: -30px;
-  left: 20px;
-  background: #b0b0b0;
-  padding: 5px 20px;
-  border-radius: 5px 5px 0 0;
-  color: #fff;
-  font-weight: bold;
-}
-
-.close-button {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.close-button:hover {
-  color: #333;
-}
-
-.changelog-content {
-  color: #444;
-}
-
-.changelog-content h2 {
-  margin-top: 0;
-  color: #555;
-  font-size: 1.5rem;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 0.5rem;
-}
-
-.changelog-entry {
-  margin-bottom: 1.5rem;
-}
-
-.changelog-date {
-  font-weight: bold;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.changelog-list {
-  margin: 0;
-  padding-left: 1.5rem;
-}
-
-.hidden {
-  display: none;
-}
-
-/* No results message */
-#noResults {
-  text-align: center;
-  width: 100%;
-  padding: 2rem;
-  color: #666;
-  font-style: italic;
-  display: none;
-}
-
-/* Minimal navigation */
-nav {
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 1rem;
-}
-
-nav ul {
-  display: flex;
-  justify-content: center;
-  list-style: none;
-  padding: 0;
-  gap: 1.5rem;
-}
-
-nav li a {
-  color: #666;
-  text-decoration: none;
-  font-weight: 400;
-  transition: color 0.2s;
-}
-
-nav li a:hover {
-  color: #333;
-}
-
-/* Minimal button styling */
-button, .button {
-  background-color: #f0f0f0;
-  color: #555;
-  border: 1px solid #ddd;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-button:hover, .button:hover {
-  background-color: #e6e6e6;
-}
-
-/* Clean container if needed */
-.container {
-  margin-bottom: 2rem;
-}
-
-/* Simple responsive adjustments */
-@media (max-width: 600px) {
-  body {
-    padding: 1rem;
-  }
-  
-  .folder-list {
-    gap: 1rem;
-  }
-  
-  #searchInput {
-    max-width: 100%;
-  }
-  
-  .changelog-container {
-    width: 90%;
-    padding: 1.5rem;
-  }
-}
-  </style>
 </head>
+
 <body>
-  <h1>HTML5 Games Folder Navigator</h1>
-  
-  <!-- Search Bar -->
+    <button onclick="window.location.href = 'pomodoro'" class="start_button">Study with Nate</button>
+
   <div class="search-container">
     <input type="text" id="searchInput" placeholder="Search for games..." autocomplete="off">
+    <button id="darkModeToggle" class="button">Dark Mode</button>
   </div>
-  
+  <div class="cache-controls" id="cacheControls">
+    <button id="exportCacheBtn" class="button">Export Cache</button>
+    <button id="importCacheBtn" class="button">Import Cache</button>
+    <input type="file" id="importFileInput" accept=".json,application/json" class="hidden">
+  </div>
   <div class="folder-list" id="folders"></div>
   <div id="noResults">No games found matching your search.</div>
-  
-  <!-- Changelog Overlay -->
+
+  <div id="jigsawCaptchaOverlay">
+    <div id="jigsawCaptchaModal">
+      <h2>Finish the CAPTCHA to verify!</h2>
+      <div id="puzzleContainer"></div>
+      <button id="captchaSubmitBtn">Submit</button>
+      <div id="captchaResult"></div>
+    </div>
+  </div>
+
   <div class="overlay" id="changelogOverlay">
     <div class="changelog-container">
       <button class="close-button" id="closeChangelog">&times;</button>
       <div class="changelog-content">
         <h2>HTML5 Games Navigator - Changelog</h2>
-        
+        <div class="changelog-entry">
+          <div class="changelog-date">October 28, 2025</div>
+          <ul class="changelog-list">
+            <li>Added More Games</li>
+            <li>Got approved to National Subdomain Registry</li>
+            <li>Nate Bush 🔥</li>
+          </ul>
+        </div>
         <div class="changelog-entry">
           <div class="changelog-date">April 27, 2025</div>
           <ul class="changelog-list">
@@ -317,210 +54,12 @@ button:hover, .button:hover {
             <li>Added Emulator Capabilities</li>
           </ul>
         </div>
-        </div>
       </div>
-  
-  <script>
-    // Folders from the provided images
-    const folders = [
-      "cuttheropetimetravel",
-      "dinosaur",
-      "doctor-acorn2",
-      "doctor-acorn3",
-      "doge2048",
-      "dogeminer",
-      "smashkarts",
-      "doodle-jump",
-      "driftboss",
-      "openfront",
-      "1v1.lol",
-      "a-small-world-cup",
-      "among-us",
-      "ducklife",
-      "ducklife2",
-      "ducklife3",
-      "ducklife4",
-      "ducklife5",
-      "tunnel-rush",
-      "ducklife",
-      "temple-run-2",
-      "subway-surfers-unity",
-      "stickman-hook",
-      "retro-bowl-college",
-      "edgenotfound",
-      "sandboxels",
-      "elasticmorty",
-      "poker",
-      "evilglitch",
-      "factoryballsforever",
-      "bloons-td",
-      "bloons-td-2",
-      "bloons-td-3",
-      "bloons-td-4",
-      "minesweeper",
-      "fireboy-and-watergirl-1",
-      "fireboy-and-watergirl-2",
-      "fireboy-and-watergirl-3",
-      "fireboy-and-watergirl-4",
-      "madalin-stunt-cars-2",
-      "madalin-stunt-cars-3",
-      "little-alchemy",
-      "google-feud",
-      "super-mario-bros-3",
-      "fruit-ninja",
-      "drift-hunters",
-      "cookie-clicker",
-      "cookie-clicker-2",
-      "circlo",
-      "blackjack",
-      "bitlife",
-      "basket-random",
-      "firewater",
-      "flappy-2048",
-      "flappybird",
-      "friendlyfire",
-      "geometry",
-      "geometrydash",
-      "gopher",
-      "hextris",
-      "icypurplehead2",
-      "icypurplehead3",
-      "konnekt",
-      "mc1.5.2",
-      "mcbeta0.30",
-      "mcbeta1.3",
-      "minecraft",
-      "mc1.12",
-      "motox3m",
-      "ninjavsevilcorp",
-      "packabunchas",
-      "pacman",
-      "paperio",
-      "particleclicker",
-      "physicsplayground",
-      "pushback",
-      "q1k3",
-      "rabbit-samurai",
-      "rabbit-samurai2",
-      "racer",
-      "radiusraid",
-      "retrobowl",
-      "retrohaunt",
-      "roadblocks",
-      "rooftopsniper",
-      "run3",
-      "shuttledeck",
-      "sleepingbeauty",
-      "slope",
-      "sm63",
-      "sm64",
-      "snake",
-      "spacecompany",
-      "spacegarden",
-      "spacehuggers",
-      "spaceinvaders",
-      "stack",
-      "stacktower",
-      "tetris",
-      "towermaster",
-      "underrun",
-      "vex3",
-      "vex4",
-      "vex5",
-      "vex6",
-      "webretro",
-      "xx142-b2exe"
-    ];
-    
-    const baseURL = "https://html.infintecampus.info/html5/";
-    const container = document.getElementById("folders");
-    const noResultsMessage = document.getElementById("noResults");
-    const searchInput = document.getElementById("searchInput");
-    const changelogOverlay = document.getElementById("changelogOverlay");
-    const closeChangelogBtn = document.getElementById("closeChangelog");
-    
-    // Add the changelog folder
-    const changelogFolder = document.createElement("div");
-    changelogFolder.className = "folder changelog-folder";
-    changelogFolder.textContent = "changelog";
-    container.appendChild(changelogFolder);
-    
-    // Add event listener to open changelog
-    changelogFolder.addEventListener("click", function() {
-      changelogOverlay.classList.add("show");
-    });
-    
-    // Close changelog when clicking the close button
-    closeChangelogBtn.addEventListener("click", function() {
-      changelogOverlay.classList.remove("show");
-    });
-    
-    // Close changelog when clicking outside the changelog
-    changelogOverlay.addEventListener("click", function(event) {
-      if (event.target === changelogOverlay) {
-        changelogOverlay.classList.remove("show");
-      }
-    });
-    
-    // Close changelog when pressing Escape
-    document.addEventListener("keydown", function(event) {
-      if (event.key === "Escape" && changelogOverlay.classList.contains("show")) {
-        changelogOverlay.classList.remove("show");
-        return;
-      }
-      
-      if (event.key === "Escape" && !changelogOverlay.classList.contains("show")) {
-        searchInput.value = "";
-        // Trigger the input event to update the display
-        searchInput.dispatchEvent(new Event("input"));
-        searchInput.focus();
-      }
-    });
-    
-    // Create folder elements for game folders
-    const folderElements = [];
-    
-    folders.forEach(folder => {
-      const link = document.createElement("a");
-      link.href = `${baseURL}${folder}/`;
-      link.textContent = folder.replace(/-/g, " "); // Replace hyphens with spaces for better readability
-      link.dataset.name = folder; // Store original folder name
-      link.className = "folder";
-      link.target = "_blank";
-      container.appendChild(link);
-      folderElements.push(link);
-    });
-    // Search functionality
-searchInput.addEventListener("input", function() {
-  const searchTerm = this.value.toLowerCase().trim();
-  let visibleCount = 0;
-  
-  // Filter game folders
-  folderElements.forEach(folderElement => {
-    const folderName = folderElement.textContent.toLowerCase();
-    if (folderName.includes(searchTerm)) {
-      folderElement.classList.remove("hidden");
-      visibleCount++;
-    } else {
-      folderElement.classList.add("hidden");
-    }
-  });
-
-  // Show "no results" message if needed
-  if (visibleCount === 0 && searchTerm !== "") {
-    noResultsMessage.style.display = "block";
-  } else {
-    noResultsMessage.style.display = "none";
-  }
-
-  // Always show changelog folder at the end of the search process, not first
-  if (visibleCount === 0 || searchTerm === "") {
-    changelogFolder.classList.remove("hidden");
-  } else {
-    changelogFolder.classList.add("hidden");
-  }
-});
-
-  </script>
+    </div>
+  </div>
+  <script src="script.js?v=2"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/announce-client.js"></script>
 </body>
+
 </html>
