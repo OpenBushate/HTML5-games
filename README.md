@@ -8,20 +8,3 @@ HTML5-Games
 Student Developer?
 </h2>
 Become an active contributer! Reach out to either Billy or Shaun and we would love to work with you. We want to see your style and what you can bring to this random site!
-
-## Running a local backend
-
-A minimal Node.js backend is included to serve the site locally via Express.
-
-Requirements:
-- Node.js >= 16
-
-Install dependencies and start the server:
-
-```bash
-npm install
-npm start
-```
-
-The site will be served at `http://localhost:3000` by default.
-

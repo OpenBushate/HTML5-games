@@ -9,7 +9,7 @@
       "doodle-jump",
       "driftboss",
       "openfront",
-      "1v1.lol",
+      "1v1.lol (15)",
       "a-small-world-cup",
       "among-us",
       "ducklife",
@@ -50,7 +50,7 @@
       "circlo",
       "blackjack",
       "bitlife",
-      "basket-random",
+      "basket-random (20)",
       "firewater",
       "flappy-2048",
       "flappybird",
@@ -110,7 +110,33 @@
       "learntofly2",
       "xx142-b2exe"
     ];
-    
+
+  const CURRENCY_KEY = 'coins';
+  function getCoins() { return Number(localStorage.getItem(CURRENCY_KEY) || 100); }
+  function setCoins(n) { localStorage.setItem(CURRENCY_KEY, String(n)); updateCurrencyDisplay(); }
+  function addCoins(n) { setCoins(getCoins() + Number(n)); }
+  function spendCoins(n) {
+    const cur = getCoins();
+    if (cur >= n) { setCoins(cur - n); return true; }
+    return false;
+  }
+
+  function updateCurrencyDisplay() {
+    let el = document.getElementById('currencyDisplay');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'currencyDisplay';
+      el.className = 'currency-display';
+      el.innerHTML = `<span class="coin">💰</span> <span id="coinAmount"></span> `;
+      document.body.appendChild(el);
+    }
+    const amount = getCoins();
+    const amountEl = document.getElementById('coinAmount');
+    if (amountEl) amountEl.textContent = amount;
+  }
+
+  updateCurrencyDisplay();
+
   const foldersContainer = document.getElementById("folders");
     const noResultsMessage = document.getElementById("noResults");
     const searchInput = document.getElementById("searchInput");
@@ -122,9 +148,122 @@
     changelogFolder.textContent = "changelog";
   foldersContainer.appendChild(changelogFolder);
 
+  const ownedFolder = document.createElement("div");
+  ownedFolder.className = "folder owned-folder";
+  ownedFolder.textContent = "owned games";
+  foldersContainer.appendChild(ownedFolder);
+
     changelogFolder.addEventListener("click", function() {
       changelogOverlay.classList.add("show");
     });
+    
+    const ownedOverlay = document.createElement('div');
+    ownedOverlay.id = 'ownedOverlay';
+    ownedOverlay.className = 'overlay';
+    ownedOverlay.innerHTML = `
+      <div class="changelog-container owned-container">
+        <button class="close-button" id="closeOwned">&times;</button>
+        <div class="changelog-content">
+          <h2>Owned Games</h2>
+          <div id="ownedList" class="owned-list"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(ownedOverlay);
+
+    const purchaseOverlay = document.createElement('div');
+    purchaseOverlay.id = 'purchaseConfirmOverlay';
+    purchaseOverlay.className = 'overlay';
+    purchaseOverlay.innerHTML = `
+      <div class="changelog-container confirm-container">
+        <button class="close-button" id="closePurchase">&times;</button>
+        <div class="changelog-content">
+          <h2 id="purchaseTitle">Confirm Purchase</h2>
+          <p id="purchaseText">Do you want to purchase this game?</p>
+          <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+            <button id="confirmPurchaseBtn" class="button">Buy</button>
+            <button id="cancelPurchaseBtn" class="button">Cancel</button>
+          </div>
+          <div id="purchaseMsg" style="margin-top:10px;color:#e63946;font-weight:700;text-align:center;"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(purchaseOverlay);
+
+    const purchaseTitle = purchaseOverlay.querySelector('#purchaseTitle');
+    const purchaseText = purchaseOverlay.querySelector('#purchaseText');
+    const purchaseMsg = purchaseOverlay.querySelector('#purchaseMsg');
+    const confirmPurchaseBtn = purchaseOverlay.querySelector('#confirmPurchaseBtn');
+    const cancelPurchaseBtn = purchaseOverlay.querySelector('#cancelPurchaseBtn');
+    document.getElementById('closePurchase').addEventListener('click', () => purchaseOverlay.classList.remove('show'));
+    cancelPurchaseBtn.addEventListener('click', () => purchaseOverlay.classList.remove('show'));
+
+    function showPurchaseConfirm(name, cost, onConfirm) {
+      purchaseMsg.textContent = '';
+      purchaseTitle.textContent = `Buy ${name.replace(/-/g,' ')}`;
+      purchaseText.textContent = `This game costs ${cost} coins. Do you want to buy it?`;
+      purchaseOverlay.classList.add('show');
+      // remove previous handlers
+      const newConfirm = confirmPurchaseBtn.cloneNode(true);
+      confirmPurchaseBtn.parentNode.replaceChild(newConfirm, confirmPurchaseBtn);
+      // attach new handler
+      newConfirm.addEventListener('click', function(){
+        try { onConfirm(); } catch (e) { purchaseMsg.textContent = 'Purchase failed.'; }
+      });
+      // update references
+      // (we don't keep the button reference beyond this function)
+    }
+
+    const ownedListEl = ownedOverlay.querySelector('#ownedList');
+      function isOwned(name){ return localStorage.getItem('owned:'+name) === 'true'; }
+      function parseFolderEntry(entry) {
+        const str = String(entry || '').trim();
+        const m = str.match(/^(.*)\s*\((\d+)\)\s*$/);
+        if (m) {
+          const slug = m[1].trim();
+          const cost = Number(m[2]) || 0;
+          const display = slug.replace(/-/g, ' ');
+          return { slug, display, cost };
+        }
+        const slug = str;
+        const cost = Math.max(5, Math.floor(slug.length / 2));
+        const display = slug.replace(/-/g, ' ');
+        return { slug, display, cost };
+      }
+    function markOwned(name){ try { localStorage.setItem('owned:'+name, 'true'); } catch(e){} }
+    function populateOwnedList(){
+      ownedListEl.innerHTML = '';
+      let found = false;
+      folders.forEach(folder => {
+        const parsed = parseFolderEntry(folder);
+        if (!isOwned(parsed.slug)) return;
+        found = true;
+        const link = document.createElement("a");
+
+        const currentPath = window.location.pathname;
+        const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
+        const targetUrl = `/html5${baseDir}${parsed.slug}/`;
+        link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
+        link.dataset.original = targetUrl;
+
+        link.textContent = parsed.display;
+        link.dataset.name = parsed.slug;
+        link.className = "folder";
+        link.target = "_blank";
+
+        ownedListEl.appendChild(link);
+      });
+
+      if (!found) ownedListEl.textContent = 'You have not purchased any games yet.';
+    }
+
+    ownedFolder.addEventListener('click', function(){
+      populateOwnedList();
+      ownedOverlay.classList.add('show');
+    });
+
+    ownedOverlay.addEventListener('click', function(ev){
+      if (ev.target === ownedOverlay) ownedOverlay.classList.remove('show');
+    });
+    document.getElementById('closeOwned').addEventListener('click', function(){ ownedOverlay.classList.remove('show'); });
     
     closeChangelogBtn.addEventListener("click", function() {
       changelogOverlay.classList.remove("show");
@@ -152,20 +291,61 @@
     const folderElements = [];
     
 folders.forEach(folder => {
+  const parsed = parseFolderEntry(folder);
   const link = document.createElement("a");
 
   const currentPath = window.location.pathname;
   const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
   // target page (original game folder)
-  const targetUrl = `/html5${baseDir}${folder}/`;
+  const targetUrl = `/html5${baseDir}${parsed.slug}/`;
   // open inside a cloaking wrapper so pages keep the same header when opened
   link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
   link.dataset.original = targetUrl;
 
-  link.textContent = folder.replace(/-/g, " ");
-  link.dataset.name = folder;
+  const cost = parsed.cost;
+  link.dataset.cost = String(cost);
+
+  link.textContent = parsed.display;
+  link.dataset.name = parsed.slug;
   link.className = "folder";
   link.target = "_blank";
+
+
+  const badge = document.createElement('span');
+  badge.className = 'cost-badge';
+  if (isOwned(parsed.slug)) {
+    badge.textContent = '✓';
+    badge.classList.add('owned-badge');
+  } else {
+    badge.textContent = `${cost} 💰`;
+  }
+  link.appendChild(badge);
+
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const required = Number(this.dataset.cost || 0);
+    if (isOwned(parsed.slug)) {
+      window.open(this.href, '_blank');
+      return;
+    }
+
+    showPurchaseConfirm(parsed.display, required, () => {
+      if (spendCoins(required)) {
+        markOwned(parsed.slug);
+        badge.textContent = '✓';
+        badge.classList.add('owned-badge');
+        window.open(link.href, '_blank');
+        updateCurrencyDisplay();
+        document.getElementById('purchaseConfirmOverlay').classList.remove('show');
+      } else {
+        const msg = document.getElementById('purchaseMsg');
+        if (msg) msg.textContent = `Not enough coins. You need ${required} coins.`;
+        link.classList.add('insufficient');
+        setTimeout(() => link.classList.remove('insufficient'), 700);
+      }
+    });
+  });
+
   foldersContainer.appendChild(link);
   folderElements.push(link);
 });
@@ -308,9 +488,8 @@ toggleButton.addEventListener('click', function() {
         const result = document.getElementById('captchaResult');
         if (solved) {
           result.textContent = 'CAPTCHA Passed!';
-          // cache timestamp
+
           try { localStorage.setItem(captchaKey, JSON.stringify({ts: Date.now()})); } catch (e) {}
-          // fade out and remove overlay
           overlay.classList.add('clearing');
           setTimeout(() => { overlay.style.display = 'none'; }, 650);
         } else {
@@ -319,7 +498,6 @@ toggleButton.addEventListener('click', function() {
       };
     })();
 
-  // Cache export/import utilities
   (function() {
     function readCookies() {
       const raw = document.cookie || "";
@@ -342,7 +520,6 @@ toggleButton.addEventListener('click', function() {
           out[key] = storage.getItem(key);
         }
       } catch (e) {
-        // ignore access errors
       }
       return out;
     }
@@ -411,7 +588,6 @@ toggleButton.addEventListener('click', function() {
       }
     }
 
-    // wire UI
     const exportBtn = document.getElementById('exportCacheBtn');
     const importBtn = document.getElementById('importCacheBtn');
     const importInput = document.getElementById('importFileInput');
@@ -448,3 +624,5 @@ toggleButton.addEventListener('click', function() {
     window.exportCache = exportCache;
     window.importCacheFromObject = importCacheFromObject;
   })();
+
+  setInterval(addCoins, 60000, 1); // importante: this line adds coins to balance every minute
