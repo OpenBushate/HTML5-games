@@ -14,12 +14,32 @@
 
   <div class="search-container">
     <input type="text" id="searchInput" placeholder="Search for games..." autocomplete="off">
-    <button id="darkModeToggle" class="button">Dark Mode</button>
+    <button id="settingsBtn" class="button">Settings</button>
   </div>
-  <div class="cache-controls" id="cacheControls">
-    <button id="exportCacheBtn" class="button">Export Cache</button>
-    <button id="importCacheBtn" class="button">Import Cache</button>
-    <input type="file" id="importFileInput" accept=".json,application/json" class="hidden">
+  
+  <!--settings type shi-->
+  <div class="overlay" id="settingsOverlay">
+    <div class="changelog-container" style="max-width:420px;">
+      <button class="close-button" id="closeSettings">&times;</button>
+      <div class="changelog-content">
+        <h2>Settings</h2>
+        <div style="margin-top:12px;">
+          <label style="display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" id="settingsDarkModeCheckbox">
+            <span>Enable Dark Mode</span>
+          </label>
+        </div>
+
+        <div style="margin-top:18px;display:flex;gap:8px;align-items:center;">
+          <button id="settingsExportCacheBtn" class="button">Export Cache</button>
+          <button id="settingsImportCacheBtn" class="button">Import Cache</button>
+          <button id="settingsClearCacheBtn" class="button">Clear Cache</button>
+          <input type="file" id="settingsImportFileInput" accept=".json,application/json" class="hidden">
+        </div>
+
+        <p style="margin-top:12px;color:#666;font-size:0.95rem;">Export saves cookies, localStorage and sessionStorage. Import will overwrite current storage.</p>
+      </div>
+    </div>
   </div>
   <div class="folder-list" id="folders"></div>
   <div id="noResults">No games found matching your search.</div>

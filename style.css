@@ -457,6 +457,37 @@ body.dark-mode .changelog-folder::before {
   border: 1px solid #444;
 }
 
+body.dark-mode .changelog-container {
+  background: #1f2123;
+  color: #e4e4e4;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+}
+
+body.dark-mode .changelog-container::before {
+  background: #333;
+  color: #e4e4e4;
+}
+
+body.dark-mode .close-button {
+  color: #e4e4e4;
+}
+
+body.dark-mode button,
+body.dark-mode .button {
+  background-color: #2a2a2a;
+  color: #e4e4e4;
+  border: 1px solid #3b3b3b;
+}
+
+body.dark-mode button:hover,
+body.dark-mode .button:hover {
+  background-color: #383838;
+}
+
+body.dark-mode .overlay {
+  background-color: rgba(0,0,0,0.65);
+}
+
 
 
 .folder.insufficient {

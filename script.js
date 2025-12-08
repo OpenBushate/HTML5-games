@@ -224,21 +224,30 @@ searchInput.addEventListener("input", function() {
   }
 });
 
-const toggleButton = document.getElementById('darkModeToggle');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsOverlay = document.getElementById('settingsOverlay');
+const closeSettingsBtn = document.getElementById('closeSettings');
+const darkModeCheckbox = document.getElementById('settingsDarkModeCheckbox');
 
-if (localStorage.getItem('darkMode') === 'true') {
-  document.body.classList.add('dark-mode');
-  toggleButton.textContent = 'Light Mode';
-} else {
-  toggleButton.textContent = 'Dark Mode';
+function applyDarkMode(enabled) {
+  if (enabled) document.body.classList.add('dark-mode');
+  else document.body.classList.remove('dark-mode');
+  try { localStorage.setItem('darkMode', !!enabled); } catch (e) {}
 }
 
-toggleButton.addEventListener('click', function() {
-  document.body.classList.toggle('dark-mode');
-  const isDarkMode = document.body.classList.contains('dark-mode');
-  localStorage.setItem('darkMode', isDarkMode); 
-  this.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+const savedDark = localStorage.getItem('darkMode') === 'true';
+applyDarkMode(savedDark);
+if (darkModeCheckbox) darkModeCheckbox.checked = savedDark;
+
+if (darkModeCheckbox) darkModeCheckbox.addEventListener('change', function() {
+  applyDarkMode(!!this.checked);
 });
+
+if (settingsBtn && settingsOverlay) {
+  settingsBtn.addEventListener('click', () => settingsOverlay.classList.add('show'));
+  closeSettingsBtn.addEventListener('click', () => settingsOverlay.classList.remove('show'));
+  settingsOverlay.addEventListener('click', (e) => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('show'); });
+}
     (function(){
       const imageSrc = "thegloriusgoat.png";
       const rows = 3, cols = 3, pieceSize = 100;
@@ -435,9 +444,10 @@ toggleButton.addEventListener('click', function() {
       }
     }
 
-    const exportBtn = document.getElementById('exportCacheBtn');
-    const importBtn = document.getElementById('importCacheBtn');
-    const importInput = document.getElementById('importFileInput');
+    const exportBtn = document.getElementById('settingsExportCacheBtn');
+    const importBtn = document.getElementById('settingsImportCacheBtn');
+    const importInput = document.getElementById('settingsImportFileInput');
+    const clearBtn = document.getElementById('settingsClearCacheBtn');
 
     if (exportBtn) exportBtn.addEventListener('click', () => {
       try {
@@ -466,6 +476,22 @@ toggleButton.addEventListener('click', function() {
       };
       reader.readAsText(file);
       this.value = '';
+    });
+
+    if (clearBtn) clearBtn.addEventListener('click', function() {
+      const ok = confirm('This will clear localStorage, sessionStorage and delete cookies for this origin. Continue?');
+      if (!ok) return;
+      try {
+        try { localStorage.clear(); } catch (e) {}
+        try { sessionStorage.clear(); } catch (e) {}
+        const cookies = readCookies();
+        Object.keys(cookies).forEach(name => {
+          try { setCookie(name, '', { path: '/', maxAge: 0 }); } catch (e) {}
+        });
+        alert('Cache cleared. You may need to reload the page for changes to take full effect.');
+      } catch (err) {
+        alert('Failed to clear cache: ' + (err && err.message));
+      }
     });
 
     window.exportCache = exportCache;
