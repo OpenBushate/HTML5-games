@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/williambattista726/HTML5-games/refs/heads/main/thegloriusgoat.png" alt="Void Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/williambattista726/HTML5-games/heads/main/thegloriusgoat.png" alt="nate Logo" width="200"/>
 </p>
 <h1 align="center">
 HTML5-Games
