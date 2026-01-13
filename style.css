@@ -19,6 +19,8 @@ h1 {
 .search-container {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 2rem;
 }
 
@@ -43,6 +45,15 @@ h1 {
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
+}
+
+#sourceSelector {
+  padding: 0.75rem 1rem;
+  min-width: 180px;
+}
+
+#settingsBtn {
+  padding: 0.75rem 1rem;
 }
 
 #searchInput:focus {
@@ -328,6 +339,7 @@ body.dark-mode .changelog-folder {
   border-radius: 0.4em;
   box-shadow: 0.1em 0.1em;
   cursor: pointer;
+  margin-left: -10%;
 }
 
 .start_button:hover {

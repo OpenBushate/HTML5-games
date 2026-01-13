@@ -1,4 +1,18 @@
-    const folders = [
+    // Load game sources from config
+    // If config is not loaded, use empty defaults
+    const sources = typeof gameSources !== 'undefined' ? gameSources : {};
+    
+    // Populate dropdown with sources
+    const sourceSelector = document.getElementById('sourceSelector');
+    Object.keys(sources).forEach(key => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = sources[key].name;
+      sourceSelector.appendChild(option);
+    });
+    
+    // Get games from config
+    const foldersHtml5 = sources['html5']?.games || [
       "cuttheropetimetravel",
       "dinosaur",
       "doctor-acorn2",
@@ -110,6 +124,138 @@
       "learntofly2",
       "xx142-b2exe"
     ];
+
+    const foldersSubmodule = sources['monkeygg2.github.io']?.games || [
+      "10-minutes-till-dawn",
+      "1v1-lol",
+      "2048",
+      "a-dark-room",
+      "abandoned",
+      "abandoned-2",
+      "ages-of-conflict",
+      "aground",
+      "amidst-the-sky",
+      "ampler-launcher",
+      "another-gentlemans-adventure",
+      "awesome-tanks",
+      "awesome-tanks-2",
+      "babel-tower",
+      "basket-random",
+      "basketball-stars",
+      "bit-life",
+      "boxing-random",
+      "brawl-stars-project-laser",
+      "breaklock",
+      "chrome-dino",
+      "clicker-heroes",
+      "clicker-heroes-updated",
+      "conways-game-of-life",
+      "cookie-clicker",
+      "core-ball",
+      "crossy-road",
+      "cut-the-rope",
+      "doge-miner",
+      "doodle-jump",
+      "drift-boss",
+      "drive-mad",
+      "drive-mad-s",
+      "duck-life-4",
+      "dune",
+      "eggy-car",
+      "evowars",
+      "family-feud",
+      "fireboy-and-watergirl",
+      "fireboy-and-watergirl-2",
+      "fireboy-and-watergirl-3",
+      "fireboy-and-watergirl-4",
+      "flappy-bird",
+      "flash",
+      "friday-night-funkin",
+      "geometry-dash-lite",
+      "geometry-dash-remastered",
+      "geometry-vibes",
+      "geometry-vibes-monster",
+      "geometry-vibes-x-ball",
+      "getaway-shootout",
+      "gons-io",
+      "gunspin",
+      "hextris",
+      "idle-breakout",
+      "incremancer",
+      "lion-soldiers-vengeance",
+      "maptroid",
+      "mario-game",
+      "monkey-mart",
+      "motox3m",
+      "n-gon",
+      "n-step-steve-part-1",
+      "n-step-steve-part-2",
+      "ovo",
+      "particle-clicker",
+      "pcraft",
+      "planet-life",
+      "progress-knight-quest",
+      "progress-knight-reborn",
+      "pull-of-war",
+      "reach-the-core",
+      "restless-wing-syndrome",
+      "retro-bowl",
+      "retro-bowl-old",
+      "rift-shift",
+      "rocket-league-2d",
+      "rooftop-snipers",
+      "rookie-bowman",
+      "run-3",
+      "run-3-beta",
+      "sabercut",
+      "sandspiel",
+      "scuba-bear",
+      "shadow-fight",
+      "slice-master",
+      "slope",
+      "smart-ball",
+      "smash-karts",
+      "soccer-random",
+      "station-saturn",
+      "stickman-hook",
+      "subway-surfers",
+      "subway-surfers-ny",
+      "tanuki-sunset",
+      "temple-run-2",
+      "the-final-earth",
+      "the-treasure",
+      "there-is-no-game",
+      "tic-tac-what",
+      "time-shooter",
+      "time-shooter-3",
+      "tiny-fishing",
+      "trace",
+      "tunnel-rush",
+      "two-ball-3d",
+      "vex-3",
+      "vex-4",
+      "vex-5",
+      "vex-6",
+      "vex-7",
+      "volley-random",
+      "web-osu",
+      "where-is-the-water",
+      "x-trench-run",
+      "yohoho"
+    ];
+
+    let currentSource = 'html5'; // Default source
+    let folders = foldersHtml5; // Default to html5 games
+    
+    // Load saved source from localStorage
+    try {
+      const savedSource = localStorage.getItem('gameSource');
+      // Check if saved source exists in config
+      if (savedSource && sources[savedSource]) {
+        currentSource = savedSource;
+        folders = sources[currentSource]?.games || foldersHtml5;
+      }
+    } catch (e) {}
     
   const foldersContainer = document.getElementById("folders");
     const noResultsMessage = document.getElementById("noResults");
@@ -167,34 +313,73 @@
     
     const folderElements = [];
     
-folders.forEach(folder => {
-  const parsed = parseFolderEntry(folder);
-  const link = document.createElement("a");
+function renderFolders() {
+  folderElements.forEach(el => el.remove());
+  folderElements.length = 0;
+  
+  folders.forEach(folder => {
+    const parsed = parseFolderEntry(folder);
+    const link = document.createElement("a");
 
-  const currentPath = window.location.pathname;
-  const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
-  // target page (original game folder)
-  const targetUrl = `/html5${baseDir}${parsed.slug}/`;
-  // open inside a cloaking wrapper so pages keep the same header when opened
-  link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
-  link.dataset.original = targetUrl;
+    const currentPath = window.location.pathname;
+    const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
+    
+    // Use path from config if available
+    let targetUrl;
+    if (sources[currentSource] && sources[currentSource].path) {
+      const basePath = sources[currentSource].path;
+      if (currentSource === 'html5') {
+        targetUrl = `${basePath}${baseDir}${parsed.slug}/`;
+      } else {
+        targetUrl = `${basePath}/${parsed.slug}/`;
+      }
+    } else {
+      // Fallback to old behavior
+      if (currentSource === 'html5') {
+        targetUrl = `/html5${baseDir}${parsed.slug}/`;
+      } else {
+        targetUrl = `/${currentSource}/games/${parsed.slug}/`;
+      }
+    }
+    
+    link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
+    link.dataset.original = targetUrl;
 
-  const cost = parsed.cost;
-  link.dataset.cost = String(cost);
+    const cost = parsed.cost;
+    link.dataset.cost = String(cost);
 
-  link.textContent = parsed.display;
-  link.dataset.name = parsed.slug;
-  link.className = "folder";
-  link.target = "_blank";
+    link.textContent = parsed.display;
+    link.dataset.name = parsed.slug;
+    link.className = "folder";
+    link.target = "_blank";
 
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.open(this.href, '_blank');
+    });
 
-  link.addEventListener('click', function(e) {
-    e.preventDefault();
-    window.open(this.href, '_blank');
+    foldersContainer.appendChild(link);
+    folderElements.push(link);
   });
+}
 
-  foldersContainer.appendChild(link);
-  folderElements.push(link);
+renderFolders();
+
+// Set dropdown to saved value
+if (sourceSelector) sourceSelector.value = currentSource;
+
+sourceSelector.addEventListener('change', function() {
+  const newSource = this.value;
+  if (currentSource !== newSource) {
+    currentSource = newSource;
+    // Get games from the selected source
+    folders = sources[newSource]?.games || [];
+    renderFolders();
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input'));
+    // Save to localStorage
+    try { localStorage.setItem('gameSource', newSource); } catch (e) {}
+  }
 });
 
 searchInput.addEventListener("input", function() {
