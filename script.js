@@ -1,8 +1,8 @@
-    // Load game sources from config
-    // If config is not loaded, use empty defaults
+    
+    
     const sources = typeof gameSources !== 'undefined' ? gameSources : {};
     
-    // Populate dropdown with sources
+    
     const sourceSelector = document.getElementById('sourceSelector');
     Object.keys(sources).forEach(key => {
       const option = document.createElement('option');
@@ -11,7 +11,7 @@
       sourceSelector.appendChild(option);
     });
     
-    // Get games from config
+    
     const foldersHtml5 = sources['html5']?.games || [
       "cuttheropetimetravel",
       "dinosaur",
@@ -244,19 +244,53 @@
       "yohoho"
     ];
 
-    let currentSource = 'html5'; // Default source
-    let folders = foldersHtml5; // Default to html5 games
+    let currentSource = 'html5'; 
+    let folders = foldersHtml5; 
+    const EXTERNAL_SOURCE_TYPE = 'external-proxy';
+    const externalCache = { loaded: false, data: [] };
+
+    async function loadExternalGames(sourceKey) {
+      if (externalCache.loaded) return externalCache.data;
+      externalCache.loaded = true;
+      const source = sources[sourceKey] || {};
+      const dataUrl = source.dataUrl || '/games-proxy.json';
+      try {
+        const res = await fetch(dataUrl, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Failed to load external games (${res.status})`);
+        const data = await res.json();
+        externalCache.data = Array.isArray(data) ? data : [];
+      } catch (e) {
+        externalCache.data = [];
+      }
+      return externalCache.data;
+    }
+
+    async function getFoldersForSource(sourceKey) {
+      const source = sources[sourceKey] || {};
+      if (source.type === EXTERNAL_SOURCE_TYPE) {
+        return await loadExternalGames(sourceKey);
+      }
+      return source.games || foldersHtml5;
+    }
+
+    async function setSource(sourceKey, persist) {
+      currentSource = sourceKey;
+      folders = await getFoldersForSource(sourceKey);
+      renderFolders();
+      if (persist) {
+        try { localStorage.setItem('gameSource', sourceKey); } catch (e) {}
+      }
+    }
+
     
-    // Load saved source from localStorage
     try {
       const savedSource = localStorage.getItem('gameSource');
-      // Check if saved source exists in config
+      
       if (savedSource && sources[savedSource]) {
         currentSource = savedSource;
-        folders = sources[currentSource]?.games || foldersHtml5;
       }
     } catch (e) {}
-    
+
   const foldersContainer = document.getElementById("folders");
     const noResultsMessage = document.getElementById("noResults");
     const searchInput = document.getElementById("searchInput");
@@ -273,6 +307,14 @@
     });
     
     function parseFolderEntry(entry) {
+        if (entry && typeof entry === 'object') {
+          const name = String(entry.name || entry.title || entry.slug || '').trim();
+          const url = String(entry.url || '').trim();
+          const display = name || url || 'Untitled';
+          const slug = (name || display).toLowerCase().replace(/\s+/g, '-');
+          const cost = Math.max(5, Math.floor(display.length / 2));
+          return { slug, display, cost, url };
+        }
         const str = String(entry || '').trim();
         const m = str.match(/^(.*)\s*\((\d+)\)\s*$/);
         if (m) {
@@ -323,27 +365,35 @@ function renderFolders() {
 
     const currentPath = window.location.pathname;
     const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
+    const source = sources[currentSource] || {};
+    const isExternal = source.type === EXTERNAL_SOURCE_TYPE;
     
-    // Use path from config if available
+    
     let targetUrl;
-    if (sources[currentSource] && sources[currentSource].path) {
-      const basePath = sources[currentSource].path;
+    if (isExternal) {
+      if (!parsed.url) return;
+      targetUrl = parsed.url;
+      link.href = `proxy.html?url=${encodeURIComponent(targetUrl)}`;
+      link.dataset.original = targetUrl;
+    } else if (source.path) {
+      const basePath = source.path;
       if (currentSource === 'html5') {
         targetUrl = `${basePath}${baseDir}${parsed.slug}/`;
       } else {
         targetUrl = `${basePath}/${parsed.slug}/`;
       }
+      link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
+      link.dataset.original = targetUrl;
     } else {
-      // Fallback to old behavior
+      
       if (currentSource === 'html5') {
         targetUrl = `/html5${baseDir}${parsed.slug}/`;
       } else {
         targetUrl = `/${currentSource}/games/${parsed.slug}/`;
       }
+      link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
+      link.dataset.original = targetUrl;
     }
-    
-    link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
-    link.dataset.original = targetUrl;
 
     const cost = parsed.cost;
     link.dataset.cost = String(cost);
@@ -363,22 +413,19 @@ function renderFolders() {
   });
 }
 
-renderFolders();
+async function initializeSource() {
+  await setSource(currentSource, false);
+  if (sourceSelector) sourceSelector.value = currentSource;
+}
 
-// Set dropdown to saved value
-if (sourceSelector) sourceSelector.value = currentSource;
+initializeSource();
 
-sourceSelector.addEventListener('change', function() {
+sourceSelector.addEventListener('change', async function() {
   const newSource = this.value;
   if (currentSource !== newSource) {
-    currentSource = newSource;
-    // Get games from the selected source
-    folders = sources[newSource]?.games || [];
-    renderFolders();
+    await setSource(newSource, true);
     searchInput.value = '';
     searchInput.dispatchEvent(new Event('input'));
-    // Save to localStorage
-    try { localStorage.setItem('gameSource', newSource); } catch (e) {}
   }
 });
 
@@ -437,7 +484,7 @@ if (settingsBtn && settingsOverlay) {
       const imageSrc = "thegloriusgoat.png";
       const rows = 3, cols = 3, pieceSize = 100;
       const captchaKey = 'jigsawCaptchaPassed';
-      const captchaMaxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+      const captchaMaxAge = 7 * 24 * 60 * 60 * 1000; 
 
       function captchaStillValid() {
         try {
@@ -520,7 +567,7 @@ if (settingsBtn && settingsOverlay) {
         dragSrcEl = null;
       });
 
-      // submit
+      
       document.getElementById('captchaSubmitBtn').onclick = function() {
         let solved = true;
         Array.from(puzzleContainer.children).forEach((piece, idx) => {
@@ -579,8 +626,8 @@ if (settingsBtn && settingsOverlay) {
 
     function setCookie(name, value, opts = {}) {
       let cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value);
-      // default path and 1 year max-age
-      const maxAge = opts.maxAge || 365 * 24 * 60 * 60; // seconds
+      
+      const maxAge = opts.maxAge || 365 * 24 * 60 * 60; 
       cookie += '; path=' + (opts.path || '/');
       if (maxAge) cookie += '; max-age=' + String(maxAge);
       if (opts.secure) cookie += '; secure';

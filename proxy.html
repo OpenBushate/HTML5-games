@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nate Bush 🔥</title>
+  <link rel="icon" href="/thegloriusgoat.png" type="image/png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: "DM Sans", "Inter", system-ui, sans-serif;
+    }
+
+    #player-root {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #status {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 10;
+    }
+
+    #error {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      max-width: 320px;
+      padding: 10px 14px;
+      background: #c41e3a;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+      z-index: 10;
+    }
+
+    #sj-frame {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="player-root">
+    <div id="status">Loading game...</div>
+    <div id="error"></div>
+  </div>
+
+  <script src="/scram/scramjet.all.js"></script>
+  <script src="/baremux/index.js"></script>
+  <script src="/register-sw.js"></script>
+  <script>
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const rawUrl = params.get("url") || "";
+      const status = document.getElementById("status");
+      const errorBox = document.getElementById("error");
+
+      function showError(message) {
+        errorBox.textContent = message;
+        errorBox.style.display = "block";
+      }
+
+      function normalizeUrl(input) {
+        if (!input) return "";
+        try {
+          return new URL(input).toString();
+        } catch (err) {}
+
+        try {
+          const url = new URL(`http://${input}`);
+          if (url.hostname.includes(".")) return url.toString();
+        } catch (err) {}
+
+        return "";
+      }
+
+      const targetUrl = normalizeUrl(rawUrl);
+      if (!targetUrl) {
+        status.textContent = "Invalid game URL";
+        showError("Missing or invalid game URL.");
+        return;
+      }
+
+      const { ScramjetController } = $scramjetLoadController();
+      const scramjet = new ScramjetController({
+        files: {
+          wasm: "/scram/scramjet.wasm.wasm",
+          all: "/scram/scramjet.all.js",
+          sync: "/scram/scramjet.sync.js",
+        },
+      });
+
+      try {
+        await scramjet.init();
+      } catch (err) {
+        status.textContent = "Scramjet failed to initialize";
+        showError(err.toString());
+        return;
+      }
+
+      try {
+        await registerSW();
+      } catch (err) {
+        status.textContent = "Service worker failed";
+        showError(err.toString());
+        return;
+      }
+
+      const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+      const wispUrl =
+        (location.protocol === "https:" ? "wss" : "ws") +
+        "://" +
+        location.host +
+        "/wisp/";
+
+      const preferredTransport =
+        localStorage.getItem("scramjetTransport") || "Epoxy";
+      const transportMap = {
+        Epoxy: "/epoxy/index.mjs",
+        Libcurl: "/libcurl/index.mjs",
+      };
+
+      async function setTransport(path) {
+        await connection.setTransport(path, [{ wisp: wispUrl }]);
+      }
+
+      try {
+        const desired = transportMap[preferredTransport] || transportMap.Epoxy;
+        if ((await connection.getTransport()) !== desired) {
+          await setTransport(desired);
+        }
+      } catch (err) {
+        status.textContent = "Transport setup failed";
+        showError(err.toString());
+        return;
+      }
+
+      const frame = scramjet.createFrame();
+      frame.frame.id = "sj-frame";
+      document.getElementById("player-root").appendChild(frame.frame);
+      status.textContent = "Launching game...";
+      frame.go(targetUrl);
+
+      setTimeout(() => {
+        status.textContent = "";
+        status.style.display = "none";
+      }, 1500);
+    })();
+  </script>
+</body>
+</html>

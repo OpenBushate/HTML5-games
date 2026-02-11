@@ -1,0 +1,276 @@
+import dotenv from "dotenv";
+import fastifyHelmet from "@fastify/helmet";
+import Fastify from "fastify";
+import fastifyStatic from "@fastify/static";
+import fastifyCookie from "@fastify/cookie";
+import wisp from "wisp-server-node";
+import { join } from "node:path";
+import { access } from "node:fs/promises";
+import { createServer, ServerResponse } from "node:http";
+import { createBareServer } from "@tomphttp/bare-server-node";
+import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
+import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
+import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
+import { bareModulePath } from "@mercuryworkshop/bare-as-module3";
+import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
+import { MasqrMiddleware } from "./masqr.js";
+
+dotenv.config();
+
+ServerResponse.prototype.setMaxListeners(50);
+ServerResponse.prototype.setMaxListeners(50);
+
+const rootDir = import.meta.dirname;
+
+const port = Number(process.env.PORT || 2345);
+const server = createServer();
+const bare = createBareServer("/seal/");
+
+server.on("upgrade", (req, sock, head) =>
+  bare.shouldRoute(req)
+    ? bare.routeUpgrade(req, sock, head)
+    : req.url.endsWith("/wisp/")
+      ? wisp.routeRequest(req, sock, head)
+      : sock.end()
+);
+
+const app = Fastify({
+  serverFactory: h => (
+    server.on("request", (req, res) =>
+      bare.shouldRoute(req) ? bare.routeRequest(req, res) : h(req, res)
+    ),
+    server
+  ),
+  logger: false
+});
+
+if (process.env.FORCE_HTTPS === "true") {
+  app.addHook("onRequest", async (req, reply) => {
+    if (req.headers["x-forwarded-proto"] === "http") {
+      reply.redirect(`https://${req.headers.host}${req.raw.url}`);
+    }
+  });
+}
+
+await app.register(fastifyHelmet, {
+  contentSecurityPolicy: false
+});
+
+await app.register(fastifyCookie);
+
+// Provide reply.sendFile for explicit routing
+await app.register(fastifyStatic, {
+  root: rootDir,
+  prefix: "/__root/",
+  decorateReply: true
+});
+
+// Space Proxy static assets (now in root)
+[
+  { root: join(rootDir, "assets"), prefix: "/assets/" },
+  { root: join(rootDir, "css"), prefix: "/css/" },
+  { root: join(rootDir, "js"), prefix: "/js/" },
+  { root: join(rootDir, "json"), prefix: "/json/" },
+  { root: join(rootDir, "@"), prefix: "/@/" },
+  { root: join(rootDir, "$"), prefix: "/$/" },
+  { root: join(rootDir, "~"), prefix: "/~/" },
+  { root: join(rootDir, "M"), prefix: "/M/" },
+  { root: join(rootDir, "&"), prefix: "/&/" },
+  { root: join(rootDir, "sm"), prefix: "/sm/" }
+].forEach(r => app.register(fastifyStatic, { ...r, decorateReply: false }));
+
+// Root game folders
+[
+  { root: join(rootDir, "html5"), prefix: "/html5/" },
+  { root: join(rootDir, "monkeygg2.github.io"), prefix: "/monkeygg2.github.io/" },
+  { root: join(rootDir, "pomodoro"), prefix: "/pomodoro/" },
+  { root: join(rootDir, "engines", "scram"), prefix: "/scram/" }
+].forEach(r => app.register(fastifyStatic, { ...r, decorateReply: false }));
+
+// Ultraviolet and transport assets
+[
+  { root: libcurlPath, prefix: "/libcurl/" },
+  { root: epoxyPath, prefix: "/epoxy/" },
+  { root: baremuxPath, prefix: "/baremux/" },
+  { root: bareModulePath, prefix: "/baremod/" },
+  { root: join(rootDir, "js"), prefix: "/_dist_uv/" },
+  { root: uvPath, prefix: "/_uv/" }
+].forEach(r => app.register(fastifyStatic, { ...r, decorateReply: false }));
+
+app.get("/uv/*", async (req, reply) =>
+  reply.sendFile(
+    req.params["*"],
+    await access(join(rootDir, "dist/uv", req.params["*"]))
+      .then(() => join(rootDir, "dist/uv"))
+      .catch(() => uvPath)
+  )
+);
+
+if (process.env.MASQR === "true") {
+  app.addHook("onRequest", MasqrMiddleware);
+}
+
+const proxy = (url, type = "application/javascript") => async (req, reply) => {
+  const trackingDomains = [
+    "trk.pinterest.com", "widgets.pinterest.com", "events.reddit.com", "events.redditmedia.com",
+    "ads.youtube.com", "ads-api.tiktok.com", "analytics.tiktok.com", "ads-sg.tiktok.com",
+    "business-api.tiktok.com", "ads.tiktok.com", "log.byteoversea.com", "ads.yahoo.com",
+    "analytics.yahoo.com", "geo.yahoo.com", "udc.yahoo.com", "udcm.yahoo.com", "advertising.yahoo.com",
+    "analytics.query.yahoo.com", "partnerads.ysm.yahoo.com", "log.fc.yahoo.com", "gemini.yahoo.com",
+    "extmaps-api.yandex.net", "analytics-sg.tiktok.com", "adtech.yahooinc.com", "adfstat.yandex.ru",
+    "appmetrica.yandex.ru", "metrika.yandex.ru", "advertising.yandex.ru", "offerwall.yandex.net",
+    "adfox.yandex.ru", "auction.unityads.unity3d.com", "webview.unityads.unity3d.com", "config.unityads.unity3d.com",
+    "bdapi-ads.realmemobile.com", "bdapi-in-ads.realmemobile.com", "api.ad.xiaomi.com", "data.mistat.xiaomi.com",
+    "data.mistat.india.xiaomi.com", "data.mistat.rus.xiaomi.com", "sdkconfig.ad.xiaomi.com", "sdkconfig.ad.intl.xiaomi.com",
+    "globalapi.ad.xiaomi.com", "tracking.rus.miui.com", "adsfs.oppomobile.com", "adx.ads.oppomobile.com",
+    "ck.ads.oppomobile.com", "data.ads.oppomobile.com", "metrics.data.hicloud.com", "metrics2.data.hicloud.com",
+    "grs.hicloud.com", "logservice.hicloud.com", "logservice1.hicloud.com", "logbak.hicloud.com",
+    "click.oneplus.cn", "open.oneplus.net", "samsungads.com", "smetrics.samsung.com",
+    "analytics-api.samsunghealthcn.com", "samsung-com.112.2o7.net", "nmetrics.samsung.com",
+    "advertising.apple.com", "tr.iadsdk.apple.com", "iadsdk.apple.com", "metrics.icloud.com",
+    "metrics.apple.com", "metrics.mzstatic.com", "api-adservices.apple.com", "books-analytics-events.apple.com",
+    "weather-analytics-events.apple.com", "notes-analytics-events.apple.com", "fwtracks.freshmarketer.com", "adtago.s3.amazonaws.com",
+    "analytics.s3.amazonaws.com", "advice-ads.s3.amazonaws.com", "advertising-api-eu.amazon.com", "pagead2.googlesyndication.com",
+    "adservice.google.com", "afs.googlesyndication.com", "mediavisor.doubleclick.net", "ads30.adcolony.com",
+    "adc3-launch.adcolony.com", "events3alt.adcolony.com", "wd.adcolony.com", "adservetx.media.net",
+    "analytics.google.com", "app-measurement.com", "click.googleanalytics.com", "identify.hotjar.com",
+    "events.hotjar.io", "o2.mouseflow.com", "gtm.mouseflow.com", "api.mouseflow.com", "realtime.luckyorange.com",
+    "upload.luckyorange.net", "cs.luckyorange.net", "an.facebook.com", "static.ads-twitter.com",
+    "adserver.unityads.unity3d.com", "iot-eu-logser.realme.com", "iot-logser.realme.com", "ads-api.twitter.com",
+    "adroll.com", "hotjar.com", "mixpanel.com", "adjust.com", "amazon-adsystem.com",
+    "kochava.com", "sentry.io", "cloudflareinsights.com", "appsflyer.com",
+    "ad.doubleclick.net", "google-analytics.com", "bluekai.com", "onelink.me",
+    "static.doubleclick.net/instream/ad status.js"
+  ];
+
+  const targetUrl = url(req);
+  if (trackingDomains.some(domain => targetUrl.includes(domain))) {
+    return reply.code(403).send("Blocked tracking domain");
+  }
+
+  req.headers.cookie = "";
+  req.headers.dnt = "1";
+
+  try {
+    const cache = proxy.cache || (proxy.cache = new Map());
+    const cacheKey = req.method === "GET" ? url(req) : null;
+    if (cacheKey && cache.has(cacheKey)) {
+      const cached = cache.get(cacheKey);
+      reply.headers(cached.headers);
+      reply.type(cached.type);
+      return reply.send(cached.body);
+    }
+
+    const res = await fetch(url(req));
+    if (!res.ok) return reply.code(res.status).send();
+
+    const headersToStrip = [
+      "content-security-policy",
+      "content-security-policy-report-only",
+      "x-frame-options",
+      "x-content-type-options",
+      "cross-origin-embedder-policy",
+      "cross-origin-opener-policy",
+      "cross-origin-resource-policy",
+      "strict-transport-security",
+      "set-cookie",
+      "server",
+      "x-powered-by",
+      "x-ua-compatible",
+      "x-forwarded-for",
+      "x-real-ip",
+      "referer",
+      "user-agent"
+    ];
+
+    let responseHeaders = {};
+    for (const [key, value] of res.headers.entries()) {
+      if (!headersToStrip.includes(key.toLowerCase())) {
+        reply.header(key, value);
+        responseHeaders[key] = value;
+      }
+    }
+
+    reply.header("Set-Cookie", "Secure; HttpOnly; SameSite=Strict");
+
+    const acceptEncoding = req.headers["accept-encoding"] || "";
+    let body = await res.arrayBuffer();
+    let typeHeader = res.headers.get("content-type") || type;
+    reply.type(typeHeader);
+
+    if (acceptEncoding.includes("br")) {
+      const zlib = await import("zlib");
+      body = zlib.brotliCompressSync(Buffer.from(body));
+      reply.header("Content-Encoding", "br");
+    } else if (acceptEncoding.includes("gzip")) {
+      const zlib = await import("zlib");
+      body = zlib.gzipSync(Buffer.from(body));
+      reply.header("Content-Encoding", "gzip");
+    }
+
+    if (cacheKey) {
+      cache.set(cacheKey, {
+        headers: responseHeaders,
+        type: typeHeader,
+        body
+      });
+    }
+
+    return reply.send(body);
+  } catch (err) {
+    console.error("Proxy error:", err);
+    return reply.code(500).send();
+  }
+};
+
+app.get("//*", proxy(req => `${req.params["*"]}`, ""));
+app.get("/js/script.js", proxy(() => "https://byod.privatedns.org/js/script.js"));
+
+app.get("/return", async (req, reply) =>
+  req.query?.q
+    ? fetch(`https://duckduckgo.com/ac/?q=${encodeURIComponent(req.query.q)}`)
+        .then(r => r.json())
+        .catch(() => reply.code(500).send({ error: "request failed" }))
+    : reply.code(401).send({ error: "query parameter?" })
+);
+
+const maintenanceFlagPath = join(rootDir, "MAINTENANCE");
+
+const sendRootFile = file => async (_req, reply) => {
+  const envFlag = process.env.MAINTENANCE === "true";
+  const fileFlag = await access(maintenanceFlagPath).then(() => true).catch(() => false);
+  const maintenance = envFlag || fileFlag;
+
+  if (maintenance && file === "index.html") {
+    return reply.sendFile("maintenance.html", rootDir);
+  }
+
+  return reply.sendFile(file, rootDir);
+};
+
+app.get("/", sendRootFile("index.html"));
+app.get("/index.html", sendRootFile("index.html"));
+app.get("/style.css", sendRootFile("style.css"));
+app.get("/script.js", sendRootFile("script.js"));
+app.get("/submodules-config.js", sendRootFile("submodules-config.js"));
+app.get("/cloak.html", sendRootFile("cloak.html"));
+app.get("/cloak.css", sendRootFile("cloak.css"));
+app.get("/cloak.js", sendRootFile("cloak.js"));
+app.get("/games-proxy.json", sendRootFile("games-proxy.json"));
+app.get("/proxy.html", sendRootFile("proxy.html"));
+app.get("/thegloriusgoat.png", sendRootFile("thegloriusgoat.png"));
+app.get("/sw.js", sendRootFile("sw.js"));
+app.get("/register-sw.js", sendRootFile("register-sw.js"));
+
+app.get("/500", sendRootFile("500.html"));
+app.get("/err", sendRootFile("err.html"));
+
+app.setNotFoundHandler((req, reply) =>
+  req.raw.method === "GET" && req.headers.accept?.includes("text/html")
+    ? reply.sendFile("err.html", rootDir)
+    : reply.code(404).send({ error: "Not Found" })
+);
+
+app.listen({ port, host: "0.0.0.0" }).then(address => {
+  console.log(`Server running on ${address}`);
+});
