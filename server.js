@@ -259,6 +259,7 @@ app.get("/cloak.js", sendRootFile("cloak.js"));
 app.get("/games-proxy.json", sendRootFile("games-proxy.json"));
 app.get("/proxy.html", sendRootFile("proxy.html"));
 app.get("/thegloriusgoat.png", sendRootFile("thegloriusgoat.png"));
+app.get("/h264.mp4", sendRootFile("h264.mp4"));
 app.get("/sw.js", sendRootFile("sw.js"));
 app.get("/register-sw.js", sendRootFile("register-sw.js"));
 
