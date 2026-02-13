@@ -22,7 +22,7 @@ ServerResponse.prototype.setMaxListeners(50);
 
 const rootDir = import.meta.dirname;
 
-const port = Number(process.env.PORT || 2345);
+const port = Number(process.env.PORT || 25573);
 const server = createServer();
 const bare = createBareServer("/seal/");
 
