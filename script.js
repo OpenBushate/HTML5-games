@@ -1,4 +1,29 @@
-    
+    if (window.location.hostname === 'ben.natebush.tech') {
+      function replaceTextInElement(element) {
+        if (element.nodeType === Node.TEXT_NODE) {
+          element.textContent = element.textContent.replace(/gloriusgoat\.png/g, 'thegloriusgoat_2.png')
+                                                     .replace(/natebush/g, 'benfleckser');
+        } else {
+          Array.from(element.attributes || []).forEach(attr => {
+            attr.value = attr.value.replace(/gloriusgoat\.png/g, 'thegloriusgoat_2.png')
+                                    .replace(/natebush/g, 'benfleckser');
+          });
+          Array.from(element.childNodes).forEach(child => replaceTextInElement(child));
+        }
+      }
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          replaceTextInElement(document.documentElement);
+          document.title = document.title.replace(/gloriusgoat\.png/g, 'thegloriusgoat_2.png')
+                                         .replace(/natebush/g, 'benfleckser');
+        });
+      } else {
+        replaceTextInElement(document.documentElement);
+        document.title = document.title.replace(/gloriusgoat\.png/g, 'thegloriusgoat_2.png')
+                                       .replace(/natebush/g, 'benfleckser');
+      }
+    }
     
     const sources = typeof gameSources !== 'undefined' ? gameSources : {};
     
@@ -247,26 +272,59 @@
     let currentSource = 'html5'; 
     let folders = foldersHtml5; 
     const EXTERNAL_SOURCE_TYPE = 'external-proxy';
-    const externalCache = { loaded: false, data: [] };
+    const externalCache = {};
 
     async function loadExternalGames(sourceKey) {
-      if (externalCache.loaded) return externalCache.data;
-      externalCache.loaded = true;
+      if (!externalCache[sourceKey]) externalCache[sourceKey] = { loaded: false, data: [] };
+      if (externalCache[sourceKey].loaded) return externalCache[sourceKey].data;
+      externalCache[sourceKey].loaded = true;
       const source = sources[sourceKey] || {};
       const dataUrl = source.dataUrl || '/games-proxy.json';
       try {
         const res = await fetch(dataUrl, { cache: 'no-store' });
         if (!res.ok) throw new Error(`Failed to load external games (${res.status})`);
         const data = await res.json();
-        externalCache.data = Array.isArray(data) ? data : [];
+
+        let out = [];
+        if (Array.isArray(data)) {
+          out = data;
+        } else if (data && typeof data === 'object') {
+          // support { games: { "Name": { path: "..." } } } format (monkeygg2.json)
+          if (Array.isArray(data.games)) {
+            out = data.games;
+          } else if (data.games && typeof data.games === 'object') {
+            const basePath = source.path || `/${sourceKey}/games`;
+            out = Object.keys(data.games).map(name => {
+              const info = data.games[name] || {};
+              const urlPath = String(info.path || '').trim();
+              let url;
+              if (/^(?:https?:)?\/\//.test(urlPath) || urlPath.startsWith('/')) {
+                url = urlPath;
+              } else {
+                const base = basePath.endsWith('/') ? basePath : basePath + '/';
+                url = base + urlPath + (urlPath.endsWith('/') ? '' : '/');
+              }
+              return { name, url };
+            });
+          }
+        }
+
+        externalCache[sourceKey].data = out;
       } catch (e) {
-        externalCache.data = [];
+        externalCache[sourceKey].data = [];
       }
-      return externalCache.data;
+      return externalCache[sourceKey].data;
     }
 
     async function getFoldersForSource(sourceKey) {
       const source = sources[sourceKey] || {};
+      // If a source provides a dataUrl, load it (supports both array and
+      // object formats like monkeygg2.json). Previously we only loaded when
+      // `type` was set to external-proxy which caused monkeygg2 to fall back
+      // to the default `html5` list.
+      if (source.dataUrl) {
+        return await loadExternalGames(sourceKey);
+      }
       if (source.type === EXTERNAL_SOURCE_TYPE) {
         return await loadExternalGames(sourceKey);
       }
@@ -285,9 +343,16 @@
     
     try {
       const savedSource = localStorage.getItem('gameSource');
-      
+
       if (savedSource && sources[savedSource]) {
-        currentSource = savedSource;
+        // If the user previously saved the default 'html5' but this install
+        // includes `monkeygg2.github.io`, prefer that source so users see
+        // MonkeyGG2 content instead of the generic html5 list.
+        if (savedSource === 'html5' && sources['monkeygg2.github.io']) {
+          currentSource = 'monkeygg2.github.io';
+        } else {
+          currentSource = savedSource;
+        }
       }
     } catch (e) {}
 
@@ -367,14 +432,21 @@ function renderFolders() {
     const baseDir = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
     const source = sources[currentSource] || {};
     const isExternal = source.type === EXTERNAL_SOURCE_TYPE;
-    
-    
+
+
     let targetUrl;
-    if (isExternal) {
-      if (!parsed.url) return;
+    // If the folder entry provides an explicit URL, use it directly (no proxy)
+    if (parsed.url) {
       targetUrl = parsed.url;
-      link.href = `proxy.html?url=${encodeURIComponent(targetUrl)}`;
+      if (isExternal) {
+        link.href = `proxy.html?url=${encodeURIComponent(targetUrl)}`;
+      } else {
+        link.href = `cloak.html?url=${encodeURIComponent(targetUrl)}`;
+      }
       link.dataset.original = targetUrl;
+    } else if (isExternal) {
+      // external entry without explicit URL - nothing we can do
+      return;
     } else if (source.path) {
       const basePath = source.path;
       if (currentSource === 'html5') {
