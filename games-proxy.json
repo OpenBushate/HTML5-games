@@ -131,6 +131,15 @@
     ],
     "source": "space-proxy"
   },
+    {
+    "name": "Pinterest",
+    "url": "https://pinterest.com",
+    "img": "/assets/imgs/g/doesntmatter.webp",
+    "categories": [
+      "all"
+    ],
+    "source": "space-proxy"
+  },
   {
     "name": "Agent Pyxel",
     "url": "https://html-classic.itch.zone/html/4491958/index.html",
