@@ -30,7 +30,8 @@
         }
       }
       
-      const shouldActivate = window.location.hostname === 'ben.natebush.tech' || localStorage.getItem('benMode') === 'true';
+      const benModeByHost = window.location.hostname === 'ben.natebush.tech';
+      const shouldActivate = benModeByHost || localStorage.getItem('benMode') === 'true';
       if (shouldActivate) {
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', applyBenMode);
@@ -569,7 +570,8 @@ const savedDark = localStorage.getItem('darkMode') === 'true';
 applyDarkMode(savedDark);
 if (darkModeCheckbox) darkModeCheckbox.checked = savedDark;
 
-const savedBenMode = localStorage.getItem('benMode') === 'true';
+const benModeByHost = window.location.hostname === 'ben.natebush.tech';
+const savedBenMode = benModeByHost || localStorage.getItem('benMode') === 'true';
 if (benModeCheckbox) benModeCheckbox.checked = savedBenMode;
 
 if (darkModeCheckbox) darkModeCheckbox.addEventListener('change', function() {
@@ -586,7 +588,8 @@ if (settingsBtn && settingsOverlay) {
   settingsOverlay.addEventListener('click', (e) => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('show'); });
 }
     (function(){
-      const isBenMode = localStorage.getItem('benMode') === 'true';
+      const benModeByHost = window.location.hostname === 'ben.natebush.tech';
+      const isBenMode = benModeByHost || localStorage.getItem('benMode') === 'true';
       const imageSrc = isBenMode ? "thegloriusgoat_2.png" : "thegloriusgoat.png";
       const rows = 3, cols = 3, pieceSize = 100;
       const captchaKey = 'jigsawCaptchaPassed';
