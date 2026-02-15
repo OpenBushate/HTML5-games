@@ -1,29 +1,46 @@
-    if (window.location.hostname === 'ben.natebush.tech') {
-      function replaceTextInElement(element) {
+    function initBenMode() {
+      function replaceTextInElement(element, skipHead = false) {
         if (element.nodeType === Node.TEXT_NODE) {
-          element.textContent = element.textContent.replace(/gloriusgoat\.png/g, 'thegloriusgoat_2.png')
-                                                     .replace(/natebush/g, 'benfleckser');
+          element.textContent = element.textContent.replace(/Nate Bush/g, 'Ben Fleckser')
+                                                     .replace(/natebush/gi, 'benfleckser')
+                                                     .replace(/nate/gi, 'ben');
         } else {
-          Array.from(element.attributes || []).forEach(attr => {
-            attr.value = attr.value.replace(/gloriusgoat\.png/g, 'thegloriusgoat_2.png')
-                                    .replace(/natebush/g, 'benfleckser');
-          });
-          Array.from(element.childNodes).forEach(child => replaceTextInElement(child));
+          // Skip favicon in head to avoid 404 errors
+          if (!(skipHead && element.tagName === 'LINK' && element.rel === 'icon')) {
+            Array.from(element.attributes || []).forEach(attr => {
+              attr.value = attr.value.replace(/Nate Bush/g, 'Ben Fleckser')
+                                      .replace(/natebush/gi, 'benfleckser')
+                                      .replace(/nate/gi, 'ben');
+            });
+          }
+          Array.from(element.childNodes).forEach(child => replaceTextInElement(child, skipHead));
         }
       }
       
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          replaceTextInElement(document.documentElement);
-          document.title = document.title.replace(/gloriusgoat\.png/g, 'thegloriusgoat_2.png')
-                                         .replace(/natebush/g, 'benfleckser');
-        });
-      } else {
-        replaceTextInElement(document.documentElement);
-        document.title = document.title.replace(/gloriusgoat\.png/g, 'thegloriusgoat_2.png')
-                                       .replace(/natebush/g, 'benfleckser');
+      function applyBenMode() {
+        replaceTextInElement(document.documentElement, true);
+        document.title = document.title.replace(/Nate Bush/g, 'Ben Fleckser')
+                                       .replace(/natebush/gi, 'benfleckser')
+                                       .replace(/nate/gi, 'ben');
+        
+        // Update favicon
+        const favicon = document.querySelector('link[rel="icon"]');
+        if (favicon) {
+          favicon.href = favicon.href.replace(/thegloriusgoat\.png/gi, 'thegloriusgoat_2.png');
+        }
+      }
+      
+      const shouldActivate = window.location.hostname === 'ben.natebush.tech' || localStorage.getItem('benMode') === 'true';
+      if (shouldActivate) {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', applyBenMode);
+        } else {
+          applyBenMode();
+        }
       }
     }
+    
+    initBenMode();
     
     const sources = typeof gameSources !== 'undefined' ? gameSources : {};
     
@@ -532,6 +549,7 @@ const settingsBtn = document.getElementById('settingsBtn');
 const settingsOverlay = document.getElementById('settingsOverlay');
 const closeSettingsBtn = document.getElementById('closeSettings');
 const darkModeCheckbox = document.getElementById('settingsDarkModeCheckbox');
+const benModeCheckbox = document.getElementById('settingsBenModeCheckbox');
 
 function applyDarkMode(enabled) {
   if (enabled) document.body.classList.add('dark-mode');
@@ -539,12 +557,27 @@ function applyDarkMode(enabled) {
   try { localStorage.setItem('darkMode', !!enabled); } catch (e) {}
 }
 
+function applyBenModeToggle(enabled) {
+  try { 
+    localStorage.setItem('benMode', !!enabled);
+    localStorage.removeItem('jigsawCaptchaPassed');
+  } catch (e) {}
+  location.reload();
+}
+
 const savedDark = localStorage.getItem('darkMode') === 'true';
 applyDarkMode(savedDark);
 if (darkModeCheckbox) darkModeCheckbox.checked = savedDark;
 
+const savedBenMode = localStorage.getItem('benMode') === 'true';
+if (benModeCheckbox) benModeCheckbox.checked = savedBenMode;
+
 if (darkModeCheckbox) darkModeCheckbox.addEventListener('change', function() {
   applyDarkMode(!!this.checked);
+});
+
+if (benModeCheckbox) benModeCheckbox.addEventListener('change', function() {
+  applyBenModeToggle(!!this.checked);
 });
 
 if (settingsBtn && settingsOverlay) {
@@ -553,7 +586,8 @@ if (settingsBtn && settingsOverlay) {
   settingsOverlay.addEventListener('click', (e) => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('show'); });
 }
     (function(){
-      const imageSrc = "thegloriusgoat.png";
+      const isBenMode = localStorage.getItem('benMode') === 'true';
+      const imageSrc = isBenMode ? "thegloriusgoat_2.png" : "thegloriusgoat.png";
       const rows = 3, cols = 3, pieceSize = 100;
       const captchaKey = 'jigsawCaptchaPassed';
       const captchaMaxAge = 7 * 24 * 60 * 60 * 1000; 

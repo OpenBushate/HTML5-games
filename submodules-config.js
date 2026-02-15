@@ -118,5 +118,10 @@ const gameSources = {
     name: 'External Games',
     type: 'external-proxy',
     dataUrl: '/games-proxy.json'
+  },
+  'monkeygg2': {
+    name: 'MonkeyGG2 Games',
+    path: '/monkeygg2-games',
+    dataUrl: '/json/monkeygg2_formatted.json'
   }
 };

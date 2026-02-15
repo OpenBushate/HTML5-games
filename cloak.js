@@ -38,6 +38,18 @@
   }
   document.title = defaultTitle;
 
+  try {
+    const benModeEnabled = localStorage.getItem('benMode') === 'true' || window.location.hostname === 'ben.natebush.tech';
+    const iconHref = benModeEnabled ? '/thegloriusgoat_2.png' : '/thegloriusgoat.png';
+    let favicon = document.querySelector('link[rel="icon"]');
+    if (!favicon) {
+      favicon = document.createElement('link');
+      favicon.rel = 'icon';
+      document.head.appendChild(favicon);
+    }
+    favicon.href = iconHref;
+  } catch (e) {}
+
   frame.src = url;
 
   let loaded = false;

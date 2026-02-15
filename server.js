@@ -22,7 +22,7 @@ ServerResponse.prototype.setMaxListeners(50);
 
 const rootDir = import.meta.dirname;
 
-const port = Number(process.env.PORT || 25573);
+const port = Number(process.env.PORT || 2573); // change 25573 for prod
 const server = createServer();
 const bare = createBareServer("/seal/");
 
@@ -79,15 +79,12 @@ await app.register(fastifyStatic, {
   { root: join(rootDir, "sm"), prefix: "/sm/" }
 ].forEach(r => app.register(fastifyStatic, { ...r, decorateReply: false }));
 
-// Root game folders
 [
   { root: join(rootDir, "html5"), prefix: "/html5/" },
-  { root: join(rootDir, "monkeygg2.github.io"), prefix: "/monkeygg2.github.io/" },
-  { root: join(rootDir, "pomodoro"), prefix: "/pomodoro/" },
+  { root: join(rootDir, "monkeygg2-games"), prefix: "/monkeygg2-games/" },
   { root: join(rootDir, "engines", "scram"), prefix: "/scram/" }
 ].forEach(r => app.register(fastifyStatic, { ...r, decorateReply: false }));
 
-// Ultraviolet and transport assets
 [
   { root: libcurlPath, prefix: "/libcurl/" },
   { root: epoxyPath, prefix: "/epoxy/" },
@@ -257,8 +254,10 @@ app.get("/cloak.html", sendRootFile("cloak.html"));
 app.get("/cloak.css", sendRootFile("cloak.css"));
 app.get("/cloak.js", sendRootFile("cloak.js"));
 app.get("/games-proxy.json", sendRootFile("games-proxy.json"));
+app.get("/json/monkeygg2_formatted.json", sendRootFile("json/monkeygg2_formatted.json"));
 app.get("/proxy.html", sendRootFile("proxy.html"));
 app.get("/thegloriusgoat.png", sendRootFile("thegloriusgoat.png"));
+app.get("/thegloriusgoat_2.png", sendRootFile("picture-b1c6c56996d306cc93ef79c82e43d66e_692712e3a211e.jpg"));
 app.get("/h264.mp4", sendRootFile("h264.mp4"));
 app.get("/sw.js", sendRootFile("sw.js"));
 app.get("/register-sw.js", sendRootFile("register-sw.js"));
