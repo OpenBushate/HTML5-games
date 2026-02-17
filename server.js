@@ -58,14 +58,12 @@ await app.register(fastifyHelmet, {
 
 await app.register(fastifyCookie);
 
-// Provide reply.sendFile for explicit routing
 await app.register(fastifyStatic, {
   root: rootDir,
   prefix: "/__root/",
   decorateReply: true
 });
 
-// Space Proxy static assets (now in root)
 [
   { root: join(rootDir, "assets"), prefix: "/assets/" },
   { root: join(rootDir, "css"), prefix: "/css/" },
@@ -261,6 +259,16 @@ app.get("/thegloriusgoat_2.png", sendRootFile("picture-b1c6c56996d306cc93ef79c82
 app.get("/h264.mp4", sendRootFile("h264.mp4"));
 app.get("/sw.js", sendRootFile("sw.js"));
 app.get("/register-sw.js", sendRootFile("register-sw.js"));
+
+// pomodoro - change when not lazy 
+app.get("/pomodoro", sendRootFile("maintenance.html"));
+
+app.get("/pomodoro/style.css", sendRootFile("./pomodoro/pomo.css"));
+app.get("/pomodoro/timer.js", sendRootFile("pomodoro/timer.js"));
+app.get("/pomodoro/resources/Colfieren.JPG", sendRootFile("pomodoro/resources/Colfieren.JPG"));
+app.get("/pomodoro/resources/Colfieren2.JPG", sendRootFile("pomodoro/resources/Colfieren2.JPG"));
+app.get("/pomodoro/Dos.JPG", sendRootFile("pomodoro/Dos.JPG"));
+app.get("/pomodoro/Uno.JPG", sendRootFile("pomodoro/Uno.JPG"));
 
 app.get("/500", sendRootFile("500.html"));
 app.get("/err", sendRootFile("err.html"));
