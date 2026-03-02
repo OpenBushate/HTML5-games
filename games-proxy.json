@@ -27,6 +27,16 @@
     ],
     "source": "space-proxy"
   },
+    {
+    "name": "discord",
+    "url": "https://discord.com",
+    "img": "/assets/imgs/g/10_103__Null_Kevin.webp",
+    "categories": [
+      "all",
+      "popular"
+    ],
+    "source": "space-proxy"
+  },
   {
     "name": "1v1.LOL",
     "url": "https://1v1-lol-online.github.io/",
