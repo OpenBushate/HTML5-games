@@ -58,6 +58,15 @@
     "source": "space-proxy"
   },
   {
+    "name": "Clash3D",
+    "url": "https://clash3d.com/",
+    "img": "/assets/imgs/g/2048.webp",
+    "categories": [
+      "all"
+    ],
+    "source": "space-proxy"
+  },
+  {
     "name": "2048 Multitasking",
     "url": "https://calculatorgames.github.io/simplegimes/2048-multitask/index.html",
     "img": "/assets/imgs/g/2048.webp",
